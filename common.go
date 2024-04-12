@@ -6,7 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-//error variables
+// error variables
 var (
 	ErrorAuth       = errors.New("auth enabled not initialised")
 	ErrorPermission = errors.New("permissions enabled not initialised")
@@ -24,4 +24,21 @@ func hashingPassword(pass string) string {
 	}
 
 	return string(passbyte)
+}
+
+func AuthandPermission(team *Teams) error {
+
+	//check auth enable if enabled not use auth pkg otherwise it will return error
+	if team.AuthEnable && !team.Auth.AuthFlg {
+
+		return ErrorAuth
+	}
+	//check permission enable if enabled not use team-role pkg otherwise it will return error
+	if team.PermissionEnable && !team.PermissionConf.PermissionFlg {
+
+		return ErrorPermission
+
+	}
+
+	return nil
 }

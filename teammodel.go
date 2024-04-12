@@ -7,27 +7,27 @@ import (
 )
 
 type tbluser struct {
-	Id                   int `gorm:"primaryKey;auto_increment"`
-	Uuid                 string
-	FirstName            string
-	LastName             string
-	RoleId               int
-	Email                string
-	Username             string
-	Password             string
-	MobileNo             string
-	IsActive             int
-	ProfileImage         string
-	ProfileImagePath     string
-	DataAccess           int
-	CreatedOn            time.Time
-	CreatedBy            int
-	ModifiedOn           time.Time `gorm:"DEFAULT:NULL"`
-	ModifiedBy           int       `gorm:"DEFAULT:NULL"`
-	LastLogin            time.Time `gorm:"DEFAULT:NULL"`
-	IsDeleted            int
-	DeletedOn            time.Time `gorm:"DEFAULT:NULL"`
-	DeletedBy            int       `gorm:"DEFAULT:NULL"`
+	Id                   int       `gorm:"column:id"`
+	Uuid                 string    `gorm:"column:uuid"`
+	FirstName            string    `gorm:"column:first_name"`
+	LastName             string    `gorm:"column:last_name"`
+	RoleId               int       `gorm:"column:role_id"`
+	Email                string    `gorm:"column:email"`
+	Username             string    `gorm:"column:username"`
+	Password             string    `gorm:"column:password"`
+	MobileNo             string    `gorm:"column:mobile_no"`
+	IsActive             int       `gorm:"column:is_active"`
+	ProfileImage         string    `gorm:"column:profile_image"`
+	ProfileImagePath     string    `gorm:"column:profile_image_path"`
+	DataAccess           int       `gorm:"column:data_access"`
+	CreatedOn            time.Time `gorm:"column:created_on"`
+	CreatedBy            int       `gorm:"column:created_by"`
+	ModifiedOn           time.Time `gorm:"column:modified_on;DEFAULT:NULL"`
+	ModifiedBy           int       `gorm:"column:modified_by;DEFAULT:NULL"`
+	LastLogin            time.Time `gorm:"column:last_login;DEFAULT:NULL"`
+	IsDeleted            int       `gorm:"column:is_deleted"`
+	DeletedOn            time.Time `gorm:"column:deleted_on;DEFAULT:NULL"`
+	DeletedBy            int       `gorm:"column:deleted_by;DEFAULT:NULL"`
 	ModuleName           string    `gorm:"-"`
 	RouteName            string    `gorm:"-:migration;<-:false"`
 	DisplayName          string    `gorm:"-:migration;<-:false"`
@@ -36,8 +36,8 @@ type tbluser struct {
 	PermissionId         int       `gorm:"-"`
 	FullAccessPermission int       `gorm:"-:migration;<-:false"`
 	RoleName             string    `gorm:"-:migration;<-:false"`
-	DefaultLanguageId    int
-	NameString           string `gorm:"-"`
+	DefaultLanguageId    int       `gorm:"column:default_language_id"`
+	NameString           string    `gorm:"-"`
 }
 
 type Filters struct {

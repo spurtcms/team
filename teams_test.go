@@ -33,7 +33,6 @@ func TestTeamList(t *testing.T) {
 		AuthEnable:       true,
 		PermissionEnable: true,
 		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
-		Migration:        true,
 		PermissionConf:   Permission,
 		Auth:             Auth,
 	}

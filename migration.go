@@ -66,9 +66,12 @@ func MigrationTables(db *gorm.DB) {
 	err := db.AutoMigrate(
 		&TblRole{},
 		&TblUser{},
+		&TblLanguage{},
 	)
 
 	if err != nil {
+
 		panic(err)
 	}
+
 }

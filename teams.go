@@ -1,7 +1,6 @@
 package team
 
 import (
-	"log"
 	"strings"
 	"time"
 
@@ -12,10 +11,7 @@ import (
 // Channelsetup used to initialie channel configuration
 func TeamSetup(config Config) *Teams {
 
-	if config.Migration {
-
-		MigrationTables(config.DB)
-	}
+	MigrationTables(config.DB)
 
 	return &Teams{
 		DB:               config.DB,
@@ -29,24 +25,18 @@ func TeamSetup(config Config) *Teams {
 }
 
 // get the all list users
-func (team Teams) ListUser(limit, offset int, filter Filters) (tbluserr []tbluser, totoaluser int64, err error) {
-	//check auth enable if enabled not use auth pkg otherwise it will return error
-	if team.AuthEnable && !team.Auth.AuthFlg {
+func (team *Teams) ListUser(limit, offset int, filter Filters) (tbluserr []tbluser, totoaluser int64, err error) {
 
-		return []tbluser{}, 0, ErrorAuth
-	}
-	//check permission enable if enabled not use team-role pkg otherwise it will return error
-	if team.PermissionEnable && !team.PermissionConf.PermissionFlg {
+	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return []tbluser{}, 0, ErrorPermission
-
+		return []tbluser{}, 0, AuthError
 	}
 
 	UserList, _, terr := tm.GetUsersList(offset, limit, filter, false, team.DB)
 
 	if terr != nil {
 
-		log.Println(terr)
+		return []tbluser{}, 0, terr
 	}
 
 	var userlists []tbluser
@@ -81,18 +71,11 @@ func (team Teams) ListUser(limit, offset int, filter Filters) (tbluserr []tbluse
 }
 
 // CreateUser create for your admin login.
-func (team Teams) CreateUser(teamcreate TeamCreate) (createuser tbluser, terr error) {
+func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser tbluser, terr error) {
 
-	//check auth enable if enabled not use auth pkg otherwise it will return error
-	if team.AuthEnable && !team.Auth.AuthFlg {
+	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return tbluser{}, ErrorAuth
-	}
-	//check permission enable if enabled not use team-role pkg otherwise it will return error
-	if team.PermissionEnable && !team.PermissionConf.PermissionFlg {
-
-		return tbluser{}, ErrorPermission
-
+		return tbluser{}, AuthError
 	}
 
 	password := teamcreate.Password
@@ -144,18 +127,11 @@ func (team Teams) CreateUser(teamcreate TeamCreate) (createuser tbluser, terr er
 }
 
 // update user.
-func (team Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser tbluser, terr error) {
+func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser tbluser, terr error) {
 
-	//check auth enable if enabled not use auth pkg otherwise it will return error
-	if team.AuthEnable && !team.Auth.AuthFlg {
+	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return tbluser{}, ErrorAuth
-	}
-	//check permission enable if enabled not use team-role pkg otherwise it will return error
-	if team.PermissionEnable && !team.PermissionConf.PermissionFlg {
-
-		return tbluser{}, ErrorPermission
-
+		return tbluser{}, AuthError
 	}
 
 	user_id := userid
@@ -209,20 +185,12 @@ func (team Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser tblu
 }
 
 // delete user.
-func (team Teams) DeleteUser(userid int) error {
+func (team *Teams) DeleteUser(userid int) error {
 
-	//check auth enable if enabled not use auth pkg otherwise it will return error
-	if team.AuthEnable && !team.Auth.AuthFlg {
+	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return ErrorAuth
+		return AuthError
 	}
-	//check permission enable if enabled not use team-role pkg otherwise it will return error
-	if team.PermissionEnable && !team.PermissionConf.PermissionFlg {
-
-		return ErrorPermission
-
-	}
-
 	var user tbluser
 
 	user.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
@@ -244,7 +212,7 @@ func (team Teams) DeleteUser(userid int) error {
 }
 
 // check email is already exists in your database
-func (team Teams) CheckEmail(Email string, userid int) (users TblUser, checl bool, errr error) {
+func (team *Teams) CheckEmail(Email string, userid int) (users TblUser, checl bool, errr error) {
 
 	var user TblUser
 
@@ -259,7 +227,7 @@ func (team Teams) CheckEmail(Email string, userid int) (users TblUser, checl boo
 }
 
 // check mobile
-func (team Teams) CheckNumber(mobile string, userid int) (bool, error) {
+func (team *Teams) CheckNumber(mobile string, userid int) (bool, error) {
 
 	var user TblUser
 
@@ -274,7 +242,7 @@ func (team Teams) CheckNumber(mobile string, userid int) (bool, error) {
 }
 
 // Check username,email,number exsits or not validation
-func (team Teams) CheckUserValidation(mobile string, email string, username string, userid int) (emaill bool, users bool, mobiles bool, err error) {
+func (team *Teams) CheckUserValidation(mobile string, email string, username string, userid int) (emaill bool, users bool, mobiles bool, err error) {
 
 	var user TblUser
 
@@ -291,18 +259,11 @@ func (team Teams) CheckUserValidation(mobile string, email string, username stri
 /*check new password with old password*/
 /*if it's return false it does not match to the old password*/
 /*or return true it does match to the old password*/
-func (team Teams) CheckPasswordwithOld(userid int, password string) (bool, error) {
+func (team *Teams) CheckPasswordwithOld(userid int, password string) (bool, error) {
 
-	//check auth enable if enabled not use auth pkg otherwise it will return error
-	if team.AuthEnable && !team.Auth.AuthFlg {
+	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return false, ErrorAuth
-	}
-	//check permission enable if enabled not use team-role pkg otherwise it will return error
-	if team.PermissionEnable && !team.PermissionConf.PermissionFlg {
-
-		return false, ErrorPermission
-
+		return false, AuthError
 	}
 
 	var user TblUser
@@ -326,18 +287,11 @@ func (team Teams) CheckPasswordwithOld(userid int, password string) (bool, error
 }
 
 /*Logout Last Active*/
-func (team Teams) LastLoginActivity(userid int) (err error) {
+func (team *Teams) LastLoginActivity(userid int) (err error) {
 
-	//check auth enable if enabled not use auth pkg otherwise it will return error
-	if team.AuthEnable && !team.Auth.AuthFlg {
+	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return ErrorAuth
-	}
-	//check permission enable if enabled not use team-role pkg otherwise it will return error
-	if team.PermissionEnable && !team.PermissionConf.PermissionFlg {
-
-		return ErrorPermission
-
+		return AuthError
 	}
 
 	Lerr := tm.Lastlogin(userid, time.Now(), team.DB)
@@ -351,18 +305,11 @@ func (team Teams) LastLoginActivity(userid int) (err error) {
 }
 
 // Check role already used or not
-func (team Teams) CheckRoleUsed(roleid int) (bool, error) {
+func (team *Teams) CheckRoleUsed(roleid int) (bool, error) {
 
-	//check auth enable if enabled not use auth pkg otherwise it will return error
-	if team.AuthEnable && !team.Auth.AuthFlg {
+	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return false, ErrorAuth
-	}
-	//check permission enable if enabled not use team-role pkg otherwise it will return error
-	if team.PermissionEnable && !team.PermissionConf.PermissionFlg {
-
-		return false, ErrorPermission
-
+		return false, AuthError
 	}
 
 	var tbluser TblUser

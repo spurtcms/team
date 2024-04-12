@@ -11,7 +11,6 @@ type Config struct {
 	AuthEnable       bool
 	PermissionEnable bool
 	Authenticate     auth.Authentication
-	Migration        bool
 	PermissionConf   *role.PermissionConfig
 	Auth             *auth.Auth
 }
