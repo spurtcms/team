@@ -34,7 +34,7 @@ func AuthandPermission(team *Teams) error {
 		return ErrorAuth
 	}
 	//check permission enable if enabled not use team-role pkg otherwise it will return error
-	if team.PermissionEnable && !team.PermissionConf.PermissionFlg {
+	if team.PermissionEnable && !team.Auth.PermissionFlg {
 
 		return ErrorPermission
 

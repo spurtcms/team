@@ -18,7 +18,6 @@ func TeamSetup(config Config) *Teams {
 		AuthEnable:       config.AuthEnable,
 		PermissionEnable: config.PermissionEnable,
 		Authenticate:     config.Authenticate,
-		PermissionConf:   config.PermissionConf,
 		Auth:             config.Auth,
 	}
 
