@@ -134,11 +134,11 @@ func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, DB
 }
 
 // This func will help to create a user in your database
-func (t TeamModel) CreateUser(user *tbluser, DB *gorm.DB) (team tbluser, terr error) {
+func (t TeamModel) CreateUser(user *TblUser, DB *gorm.DB) (team TblUser, terr error) {
 
 	if err := DB.Model(TblUser{}).Create(&user).Error; err != nil {
 
-		return tbluser{}, err
+		return TblUser{}, err
 
 	}
 

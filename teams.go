@@ -70,11 +70,11 @@ func (team *Teams) ListUser(limit, offset int, filter Filters) (tbluserr []tblus
 }
 
 // CreateUser create for your admin login.
-func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser tbluser, terr error) {
+func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, terr error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return tbluser{}, AuthError
+		return TblUser{}, AuthError
 	}
 
 	password := teamcreate.Password
@@ -83,7 +83,7 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser tbluser, terr e
 
 	hash_pass := hashingPassword(password)
 
-	var user tbluser
+	var user TblUser
 
 	user.Uuid = uvuid
 
@@ -119,7 +119,7 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser tbluser, terr e
 
 	if err != nil {
 
-		return tbluser{}, err
+		return TblUser{}, err
 	}
 
 	return newuser, nil
