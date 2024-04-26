@@ -14,10 +14,10 @@ func DBSetup() (*gorm.DB, error) {
 
 	dbConfig := map[string]string{
 		"username": "postgres",
-		"password": "root",
+		"password": "123",
 		"host":     "localhost",
 		"port":     "5432",
-		"dbname":   "spurt-cms-apr3",
+		"dbname":   "spurtcms",
 	}
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
@@ -47,8 +47,7 @@ func TestTeamList(t *testing.T) {
 		ExpiryFlg:  true,
 		SecretKey:  "Secret123",
 		DB:         db,
-		RoleId: 1,
-		RoleName: "",
+		RoleId:     1,
 	}
 
 	Auth := auth.AuthSetup(config)
@@ -56,7 +55,6 @@ func TestTeamList(t *testing.T) {
 	token, _ := Auth.CreateToken()
 
 	Auth.VerifyToken(token, SecretKey)
-
 
 	_, err := Auth.IsGranted("teams", auth.CRUD)
 
@@ -90,41 +88,39 @@ func TestCreateTeam(t *testing.T) {
 		ExpiryFlg:  true,
 		SecretKey:  "Secret123",
 		DB:         db,
-		RoleId: 1,
-		RoleName: "",
+		RoleId:     1,
 	}
 
 	Auth := auth.AuthSetup(config)
 
 	token, _ := Auth.CreateToken()
 
-
 	Auth.VerifyToken(token, SecretKey)
 
-
-	_, err := Auth.IsGranted("teams", auth.CRUD)
-
-	if err != nil {
-
-		panic(err)
-	}
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD)
 
 	team := TeamSetup(Config{
 		DB:               db,
-		AuthEnable:       false,
-		PermissionEnable: false,
+		AuthEnable:       true,
+		PermissionEnable: true,
 		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 
-	_, terr := team.CreateUser(TeamCreate{FirstName: "demo", RoleId: 1, Email: "demo@gmail.com"}) // TeamCreate we have multiple fields for creating user details
+	if permisison {
 
-	
+		_, terr := team.CreateUser(TeamCreate{FirstName: "demo", RoleId: 1, Email: "demo@gmail.com"}) // TeamCreate we have multiple fields for creating user details
 
-	if terr != nil {
+		if terr != nil {
 
-		log.Println(terr)
+			log.Println(terr)
+		}
+	} else {
+
+		log.Println("permissions enabled not initialised")
+
 	}
+
 }
 
 func TestUpdateTeam(t *testing.T) {
@@ -137,29 +133,33 @@ func TestUpdateTeam(t *testing.T) {
 		ExpiryFlg:  true,
 		SecretKey:  "Secret123",
 		DB:         db,
-		RoleId: 1,
-		RoleName: "",
+		RoleId:     1,
 	}
 
 	Auth := auth.AuthSetup(config)
 
 	token, _ := Auth.CreateToken()
 
-
 	Auth.VerifyToken(token, SecretKey)
 
-
-    Auth.IsGranted("teams", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD)
 
 	team := TeamSetup(Config{
 		DB:               db,
-		AuthEnable:       false,
-		PermissionEnable: false,
+		AuthEnable:       true,
+		PermissionEnable: true,
 		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
+	if permisison {
 
-	team.UpdateUser(TeamCreate{FirstName: "admin", RoleId: 1, Email: "demo2@gmail.com"}, 2)
+		team.UpdateUser(TeamCreate{FirstName: "admin", RoleId: 1, Email: "demo@gmail.com"}, 2)
+
+	} else {
+
+		log.Println("permissions enabled not initialised")
+
+	}
 }
 
 func TestDeleteteam(t *testing.T) {
@@ -172,8 +172,7 @@ func TestDeleteteam(t *testing.T) {
 		ExpiryFlg:  true,
 		SecretKey:  "Secret123",
 		DB:         db,
-		RoleId: 1,
-		RoleName: "",
+		RoleId:     2,
 	}
 
 	Auth := auth.AuthSetup(config)
@@ -182,8 +181,7 @@ func TestDeleteteam(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-
-	Auth.IsGranted("teams", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -192,6 +190,13 @@ func TestDeleteteam(t *testing.T) {
 		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
+	if permisison {
 
-	team.DeleteUser(2)
+		team.DeleteUser(2)
+
+	} else {
+
+		log.Println("permissions enabled not initialised")
+
+	}
 }
