@@ -264,7 +264,7 @@ func (t TeamModel) CheckNumber(user *TblUser, mobile string, userid int, DB *gor
 // Rolechekc
 func (t TeamModel) CheckRoleUsed(user *TblUser, roleid int, DB *gorm.DB) error {
 
-	if err := DB.Model(TblUser{}).Where("role_id=? and is_deleted =0", roleid).Find(user).Error; err != nil {
+	if err := DB.Model(TblUser{}).Where("role_id=? and is_deleted =0", roleid).First(user).Error; err != nil {
 		return err
 	}
 	return nil

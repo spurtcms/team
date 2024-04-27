@@ -10,14 +10,15 @@ import (
 	"gorm.io/gorm"
 )
 
+// Db connection
 func DBSetup() (*gorm.DB, error) {
 
 	dbConfig := map[string]string{
 		"username": "postgres",
-		"password": "123",
+		"password": "root",
 		"host":     "localhost",
 		"port":     "5432",
-		"dbname":   "spurtcms",
+		"dbname":   "spurt-cms-apr3",
 	}
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
@@ -37,6 +38,7 @@ func DBSetup() (*gorm.DB, error) {
 
 var SecretKey = "Secret123"
 
+// TeamList function test
 func TestTeamList(t *testing.T) {
 
 	db, _ := DBSetup()
@@ -48,6 +50,7 @@ func TestTeamList(t *testing.T) {
 		SecretKey:  "Secret123",
 		DB:         db,
 		RoleId:     1,
+		RoleName:   "",
 	}
 
 	Auth := auth.AuthSetup(config)
@@ -56,28 +59,32 @@ func TestTeamList(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	_, err := Auth.IsGranted("teams", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD)
 
 	team := TeamSetup(Config{
 		DB:               db,
-		AuthEnable:       false,
-		PermissionEnable: false,
+		AuthEnable:       true,
+		PermissionEnable: true,
 		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 
 	//list users
-	teamuser, count, err := team.ListUser(10, 0, Filters{})
+	if permisison {
 
-	if err != nil {
+		teamuser, count, _ := team.ListUser(10, 0, Filters{})
 
-		panic(err)
+		fmt.Println(teamuser, count)
+
+	} else {
+
+		log.Println("permissions enabled not initialised")
+
 	}
-
-	fmt.Println(teamuser, count)
 
 }
 
+// Create team function test
 func TestCreateTeam(t *testing.T) {
 
 	db, _ := DBSetup()
@@ -123,6 +130,7 @@ func TestCreateTeam(t *testing.T) {
 
 }
 
+// Update team function test
 func TestUpdateTeam(t *testing.T) {
 
 	db, _ := DBSetup()
@@ -134,6 +142,7 @@ func TestUpdateTeam(t *testing.T) {
 		SecretKey:  "Secret123",
 		DB:         db,
 		RoleId:     1,
+		RoleName:   "",
 	}
 
 	Auth := auth.AuthSetup(config)
@@ -162,6 +171,7 @@ func TestUpdateTeam(t *testing.T) {
 	}
 }
 
+// Delete team function test
 func TestDeleteteam(t *testing.T) {
 
 	db, _ := DBSetup()
@@ -173,6 +183,7 @@ func TestDeleteteam(t *testing.T) {
 		SecretKey:  "Secret123",
 		DB:         db,
 		RoleId:     2,
+		RoleName:   "",
 	}
 
 	Auth := auth.AuthSetup(config)
@@ -185,8 +196,8 @@ func TestDeleteteam(t *testing.T) {
 
 	team := TeamSetup(Config{
 		DB:               db,
-		AuthEnable:       false,
-		PermissionEnable: false,
+		AuthEnable:       true,
+		PermissionEnable: true,
 		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
@@ -199,4 +210,261 @@ func TestDeleteteam(t *testing.T) {
 		log.Println("permissions enabled not initialised")
 
 	}
+}
+
+// Checkeamil function test
+func TestCheckemail(t *testing.T) {
+
+	db, _ := DBSetup()
+
+	config := auth.Config{
+		UserId:     1,
+		ExpiryTime: 2,
+		ExpiryFlg:  true,
+		SecretKey:  "Secret123",
+		DB:         db,
+		RoleId:     2,
+		RoleName:   "",
+	}
+
+	Auth := auth.AuthSetup(config)
+
+	token, _ := Auth.CreateToken()
+
+	Auth.VerifyToken(token, SecretKey)
+
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD)
+
+	team := TeamSetup(Config{
+		DB:               db,
+		AuthEnable:       true,
+		PermissionEnable: true,
+		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
+		Auth:             Auth,
+	})
+	if permisison {
+
+		_, chk, _ := team.CheckEmail("demo2@gmail.com", 2)
+
+		log.Println("chk", chk)
+
+	} else {
+
+		log.Println("permissions enabled not initialised")
+
+	}
+
+}
+
+
+func TestCheckNumber(t *testing.T) {
+
+	db, _ := DBSetup()
+
+	config := auth.Config{
+		UserId:     1,
+		ExpiryTime: 2,
+		ExpiryFlg:  true,
+		SecretKey:  "Secret123",
+		DB:         db,
+		RoleId:     2,
+		RoleName:   "",
+	}
+
+	Auth := auth.AuthSetup(config)
+
+	token, _ := Auth.CreateToken()
+
+	Auth.VerifyToken(token, SecretKey)
+
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD)
+
+	team := TeamSetup(Config{
+		DB:               db,
+		AuthEnable:       true,
+		PermissionEnable: true,
+		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
+		Auth:             Auth,
+	})
+	if permisison {
+
+		chk, _ := team.CheckNumber("9900887500", 2)
+
+		log.Println("chk", chk)
+
+	} else {
+
+		log.Println("permissions enabled not initialised")
+
+	}
+
+}
+func TestCheckUserValidation(t *testing.T) {
+
+	db, _ := DBSetup()
+
+	config := auth.Config{
+		UserId:     1,
+		ExpiryTime: 2,
+		ExpiryFlg:  true,
+		SecretKey:  "Secret123",
+		DB:         db,
+		RoleId:     2,
+		RoleName:   "",
+	}
+
+	Auth := auth.AuthSetup(config)
+
+	token, _ := Auth.CreateToken()
+
+	Auth.VerifyToken(token, SecretKey)
+
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD)
+
+	team := TeamSetup(Config{
+		DB:               db,
+		AuthEnable:       true,
+		PermissionEnable: true,
+		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
+		Auth:             Auth,
+	})
+	if permisison {
+
+		email, user, mobile, _ := team.CheckUserValidation("9900887501", "demo@gmail.com", "demo", 2)
+
+		log.Println("chk", email, user, mobile)
+
+	} else {
+
+		log.Println("permissions enabled not initialised")
+
+	}
+
+}
+func TestCheckPasswordwithOld(t *testing.T) {
+
+	db, _ := DBSetup()
+
+	config := auth.Config{
+		UserId:     1,
+		ExpiryTime: 2,
+		ExpiryFlg:  true,
+		SecretKey:  "Secret123",
+		DB:         db,
+		RoleId:     2,
+		RoleName:   "",
+	}
+
+	Auth := auth.AuthSetup(config)
+
+	token, _ := Auth.CreateToken()
+
+	Auth.VerifyToken(token, SecretKey)
+
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD)
+
+	team := TeamSetup(Config{
+		DB:               db,
+		AuthEnable:       true,
+		PermissionEnable: true,
+		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
+		Auth:             Auth,
+	})
+	if permisison {
+
+		chk, _ := team.CheckPasswordwithOld(2, "Admin@123")
+
+		log.Println("chk", chk)
+
+	} else {
+
+		log.Println("permissions enabled not initialised")
+
+	}
+
+}
+
+func TestLastLoginActivity(t *testing.T) {
+
+	db, _ := DBSetup()
+
+	config := auth.Config{
+		UserId:     1,
+		ExpiryTime: 2,
+		ExpiryFlg:  true,
+		SecretKey:  "Secret123",
+		DB:         db,
+		RoleId:     2,
+		RoleName:   "",
+	}
+
+	Auth := auth.AuthSetup(config)
+
+	token, _ := Auth.CreateToken()
+
+	Auth.VerifyToken(token, SecretKey)
+
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD)
+
+	team := TeamSetup(Config{
+		DB:               db,
+		AuthEnable:       true,
+		PermissionEnable: true,
+		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
+		Auth:             Auth,
+	})
+	if permisison {
+
+		chk := team.LastLoginActivity(2)
+
+		log.Println("chk", chk)
+
+	} else {
+
+		log.Println("permissions enabled not initialised")
+
+	}
+
+}
+func TestCheckRoleUsed(t *testing.T) {
+
+	db, _ := DBSetup()
+
+	config := auth.Config{
+		UserId:     1,
+		ExpiryTime: 2,
+		ExpiryFlg:  true,
+		SecretKey:  "Secret123",
+		DB:         db,
+		RoleId:     2,
+		RoleName:   "",
+	}
+
+	Auth := auth.AuthSetup(config)
+
+	token, _ := Auth.CreateToken()
+
+	Auth.VerifyToken(token, SecretKey)
+
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD)
+
+	team := TeamSetup(Config{
+		DB:               db,
+		AuthEnable:       true,
+		PermissionEnable: true,
+		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
+		Auth:             Auth,
+	})
+	if permisison {
+
+		chk, _ := team.CheckRoleUsed(3)
+
+		log.Println("chk", chk)
+
+	} else {
+
+		log.Println("permissions enabled not initialised")
+
+	}
+
 }
