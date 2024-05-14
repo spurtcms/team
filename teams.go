@@ -24,21 +24,21 @@ func TeamSetup(config Config) *Teams {
 }
 
 // get the all list users
-func (team *Teams) ListUser(limit, offset int, filter Filters) (tbluserr []tbluser, totoaluser int64, err error) {
+func (team *Teams) ListUser(limit, offset int, filter Filters) (tbluserr []Tbluser, totoaluser int64, err error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return []tbluser{}, 0, AuthError
+		return []Tbluser{}, 0, AuthError
 	}
 
 	UserList, _, terr := tm.GetUsersList(offset, limit, filter, false, team.DB)
 
 	if terr != nil {
 
-		return []tbluser{}, 0, terr
+		return []Tbluser{}, 0, terr
 	}
 
-	var userlists []tbluser
+	var userlists []Tbluser
 
 	for _, val := range UserList {
 
@@ -126,18 +126,18 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, terr e
 }
 
 // update user.
-func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser tbluser, terr error) {
+func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser Tbluser, terr error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return tbluser{}, AuthError
+		return Tbluser{}, AuthError
 	}
 
 	user_id := userid
 
 	password := teamcreate.Password
 
-	var user tbluser
+	var user Tbluser
 
 	if password != "" {
 
@@ -176,7 +176,7 @@ func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser tbl
 
 	if err != nil {
 
-		return tbluser{}, err
+		return Tbluser{}, err
 	}
 
 	return User, nil
@@ -190,7 +190,7 @@ func (team *Teams) DeleteUser(userid int) error {
 
 		return AuthError
 	}
-	var user tbluser
+	var user Tbluser
 
 	user.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
@@ -311,9 +311,9 @@ func (team *Teams) CheckRoleUsed(roleid int) (bool, error) {
 		return false, AuthError
 	}
 
-	var tbluser TblUser
+	var Tbluser TblUser
 
-	err := tm.CheckRoleUsed(&tbluser, roleid, team.DB)
+	err := tm.CheckRoleUsed(&Tbluser, roleid, team.DB)
 
 	if err != nil {
 
@@ -321,5 +321,25 @@ func (team *Teams) CheckRoleUsed(roleid int) (bool, error) {
 	}
 
 	return true, nil
+
+}
+
+// get team by id
+func (team *Teams) GetUserById(Userid int) (tbluser Tbluser, err error) {
+
+	//check if auth or permission enabled
+	if autherr := AuthandPermission(team); autherr != nil {
+
+		return Tbluser{}, autherr
+	}
+
+	user, err := tm.GetUserById(Userid, team.DB)
+
+	if err != nil {
+
+		return Tbluser{}, err
+	}
+
+	return user, nil
 
 }

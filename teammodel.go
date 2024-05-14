@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type tbluser struct {
+type Tbluser struct {
 	Id                   int       `gorm:"column:id"`
 	Uuid                 string    `gorm:"column:uuid"`
 	FirstName            string    `gorm:"column:first_name"`
@@ -83,7 +83,7 @@ type TeamModel struct{}
 var tm TeamModel
 
 // get the list of users
-func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, DB *gorm.DB) (users []tbluser, count int64, err error) {
+func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, DB *gorm.DB) (users []Tbluser, count int64, err error) {
 
 	var Total_users int64
 
@@ -125,11 +125,11 @@ func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, DB
 
 	if err1 := query.Error; err1 != nil {
 
-		return []tbluser{}, 0, err1
+		return []Tbluser{}, 0, err1
 
 	}
 
-	return []tbluser{}, Total_users, nil
+	return []Tbluser{}, Total_users, nil
 
 }
 
@@ -146,7 +146,7 @@ func (t TeamModel) CreateUser(user *TblUser, DB *gorm.DB) (team TblUser, terr er
 }
 
 // update user
-func (t TeamModel) UpdateUser(user *tbluser, DB *gorm.DB) (team tbluser, terr error) {
+func (t TeamModel) UpdateUser(user *Tbluser, DB *gorm.DB) (team Tbluser, terr error) {
 
 	query := DB.Table("tbl_users").Where("id=?", user.Id)
 
@@ -167,21 +167,21 @@ func (t TeamModel) UpdateUser(user *tbluser, DB *gorm.DB) (team tbluser, terr er
 
 		if err := query.Error; err != nil {
 
-			return tbluser{}, err
+			return Tbluser{}, err
 		}
 
 	} else {
 
 		if err := query.UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "role_id": user.RoleId, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "is_active": user.IsActive, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "profile_image": user.ProfileImage, "profile_image_path": user.ProfileImagePath, "data_access": user.DataAccess, "password": user.Password}).Error; err != nil {
 
-			return tbluser{}, err
+			return Tbluser{}, err
 		}
 	}
 	return *user, nil
 }
 
 // delete team user
-func (t TeamModel) DeleteUser(user *tbluser, DB *gorm.DB) error {
+func (t TeamModel) DeleteUser(user *Tbluser, DB *gorm.DB) error {
 
 	if err := DB.Model(&TblUser{}).Where("id=?", user.Id).Updates(TblUser{IsDeleted: user.IsDeleted, DeletedOn: user.DeletedOn, DeletedBy: user.DeletedBy}).Error; err != nil {
 
@@ -269,4 +269,14 @@ func (t TeamModel) CheckRoleUsed(user *TblUser, roleid int, DB *gorm.DB) error {
 	}
 	return nil
 
+}
+
+// getuserbyid
+func (t TeamModel) GetUserById(id int, DB *gorm.DB) (user Tbluser, err error) {
+
+	if err := DB.Where("id=?", id).First(&user).Error; err != nil {
+
+		return Tbluser{}, err
+	}
+	return user, nil
 }
