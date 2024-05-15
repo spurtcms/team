@@ -343,3 +343,19 @@ func (team *Teams) GetUserById(Userid int) (tbluser Tbluser, err error) {
 	return user, nil
 
 }
+
+// check username
+func (team *Teams) CheckUsername(username string, userid int) (bool, error) {
+
+	var user TblUser
+
+	err := tm.CheckUsername(&user, username, userid, team.DB)
+
+	if err != nil {
+
+		return false, err
+	}
+
+	return true, nil
+}
+

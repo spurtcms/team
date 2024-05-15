@@ -274,9 +274,31 @@ func (t TeamModel) CheckRoleUsed(user *TblUser, roleid int, DB *gorm.DB) error {
 // getuserbyid
 func (t TeamModel) GetUserById(id int, DB *gorm.DB) (user Tbluser, err error) {
 
-	if err := DB.Where("id=?", id).First(&user).Error; err != nil {
+	if err := DB.Table("tbl_users").Where("id=?", id).First(&user).Error; err != nil {
 
 		return Tbluser{}, err
 	}
 	return user, nil
+}
+
+// check username
+func (t TeamModel) CheckUsername(user *TblUser, username string, userid int, DB *gorm.DB) error {
+
+	if userid == 0 {
+		
+		if err := DB.Table("tbl_users").Where("username = ? and is_deleted=0", username).First(&user).Error; err != nil {
+
+			return err
+		}
+
+	} else {
+		
+		if err := DB.Table("tbl_users").Where("username = ? and id not in (?) and is_deleted=0", username, userid).First(&user).Error; err != nil {
+
+			return err
+		}
+
+	}
+
+	return nil
 }
