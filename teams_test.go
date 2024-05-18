@@ -203,7 +203,7 @@ func TestDeleteteam(t *testing.T) {
 	})
 	if permisison {
 
-		team.DeleteUser(2)
+		team.DeleteUser([]int{}, 2, 1)
 
 	} else {
 
@@ -255,7 +255,6 @@ func TestCheckemail(t *testing.T) {
 	}
 
 }
-
 
 func TestCheckNumber(t *testing.T) {
 

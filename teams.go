@@ -184,23 +184,21 @@ func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser Tbl
 }
 
 // delete user.
-func (team *Teams) DeleteUser(userid int) error {
+func (team *Teams) DeleteUser(usersIds []int, userid int, deletedby int) error {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
 		return AuthError
 	}
-	var user Tbluser
+	var user TblUser
 
 	user.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
-	user.DeletedBy = userid
+	user.DeletedBy = deletedby
 
 	user.IsDeleted = 1
 
-	user.Id = userid
-
-	err := tm.DeleteUser(&user, team.DB)
+	err := tm.DeleteMultipleUser(&user, usersIds, userid, team.DB)
 
 	if err != nil {
 
@@ -359,3 +357,46 @@ func (team *Teams) CheckUsername(username string, userid int) (bool, error) {
 	return true, nil
 }
 
+
+// change user Access for multiple user
+func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int) error {
+
+	var user TblUser
+
+	user.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	user.ModifiedBy = modifiedby
+
+	user.DataAccess = status
+
+	err := tm.ChangeAccess(&user, userIds, team.DB)
+
+	if err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+// change active status
+func (team *Teams) ChangeActiveStatus(userId int, activeStatus int,modifiedby int) (bool, error) {
+
+	var userStatus TblUser
+
+	userStatus.ModifiedBy = modifiedby
+
+	userStatus.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	userStatus.IsActive = activeStatus
+
+	err := tm.ChangeActiveUser(&userStatus, userId, team.DB)
+
+	if err != nil {
+
+		return false, err
+
+	}
+	return true, nil
+
+}
