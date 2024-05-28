@@ -316,7 +316,7 @@ func (t TeamModel) ChangeAccess(user *TblUser, userIds []int, DB *gorm.DB) error
 
 // change active Status for multiple users
 
-func (t TeamModel) SelectedUserStatusChange(userStatus TblUser, userIds []int, DB gorm.DB) error {
+func (t TeamModel) SelectedUserStatusChange(userStatus *TblUser, userIds []int, DB *gorm.DB) error {
 
 	if err := DB.Debug().Model(TblUser{}).Where("id in (?)", userIds).UpdateColumns(map[string]interface{}{"is_active": userStatus.IsActive, "modified_by": userStatus.ModifiedBy, "modified_on": userStatus.ModifiedOn}).Error; err != nil {
 

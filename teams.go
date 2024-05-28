@@ -400,3 +400,26 @@ func (team *Teams) ChangeActiveStatus(userId int, activeStatus int,modifiedby in
 	return true, nil
 
 }
+
+// change active Status for multiple users
+
+func (team *Teams) SelectedUserStatusChange(userIds []int, activeStatus int, modifiedby int) error {
+
+	var userActiveStatus TblUser
+
+	userActiveStatus.ModifiedBy = modifiedby
+
+	userActiveStatus.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	userActiveStatus.IsActive = activeStatus
+
+	err := tm.SelectedUserStatusChange(&userActiveStatus, userIds, team.DB)
+
+	if err != nil {
+
+		return err
+	}
+
+	return nil
+
+}
