@@ -1,4 +1,4 @@
-package team
+package postgres
 
 import (
 	"time"
@@ -19,22 +19,6 @@ type TblRole struct {
 	ModifiedBy  int       `gorm:"DEFAULT:NULL;type:integer"`
 }
 
-type TblLanguage struct {
-	Id           int       `gorm:"primaryKey;auto_increment;type:serial"`
-	LanguageName string    `gorm:"type:character varying"`
-	LanguageCode string    `gorm:"type:character varying"`
-	ImagePath    string    `gorm:"type:character varying"`
-	IsStatus     int       `gorm:"type:integer"`
-	IsDefault    int       `gorm:"type:integer"`
-	JsonPath     string    `gorm:"type:character varying"`
-	CreatedOn    time.Time `gorm:"type:timestamp without time zone"`
-	CreatedBy    int       `gorm:"type:integer"`
-	ModifiedOn   time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
-	ModifiedBy   int       `gorm:"DEFAULT:NULL"`
-	DeletedOn    time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
-	DeletedBy    int       `gorm:"DEFAULT:NULL"`
-	IsDeleted    int       `gorm:"DEFAULT:0"`
-}
 
 type TblUser struct {
 	Id                int       `gorm:"primaryKey;type:serial"`
@@ -66,7 +50,6 @@ func MigrationTables(db *gorm.DB) {
 	err := db.AutoMigrate(
 		&TblRole{},
 		&TblUser{},
-		&TblLanguage{},
 	)
 
 	if err != nil {

@@ -65,7 +65,6 @@ func TestTeamList(t *testing.T) {
 		DB:               db,
 		AuthEnable:       true,
 		PermissionEnable: true,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 
@@ -110,7 +109,6 @@ func TestCreateTeam(t *testing.T) {
 		DB:               db,
 		AuthEnable:       true,
 		PermissionEnable: true,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 
@@ -157,7 +155,6 @@ func TestUpdateTeam(t *testing.T) {
 		DB:               db,
 		AuthEnable:       true,
 		PermissionEnable: true,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 	if permisison {
@@ -198,7 +195,6 @@ func TestDeleteteam(t *testing.T) {
 		DB:               db,
 		AuthEnable:       true,
 		PermissionEnable: true,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 	if permisison {
@@ -239,7 +235,6 @@ func TestCheckemail(t *testing.T) {
 		DB:               db,
 		AuthEnable:       true,
 		PermissionEnable: true,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 	if permisison {
@@ -282,7 +277,6 @@ func TestCheckNumber(t *testing.T) {
 		DB:               db,
 		AuthEnable:       true,
 		PermissionEnable: true,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 	if permisison {
@@ -324,7 +318,6 @@ func TestCheckUserValidation(t *testing.T) {
 		DB:               db,
 		AuthEnable:       true,
 		PermissionEnable: true,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 	if permisison {
@@ -366,7 +359,6 @@ func TestCheckPasswordwithOld(t *testing.T) {
 		DB:               db,
 		AuthEnable:       true,
 		PermissionEnable: true,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 	if permisison {
@@ -409,7 +401,6 @@ func TestLastLoginActivity(t *testing.T) {
 		DB:               db,
 		AuthEnable:       true,
 		PermissionEnable: true,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 	if permisison {
@@ -451,7 +442,6 @@ func TestCheckRoleUsed(t *testing.T) {
 		DB:               db,
 		AuthEnable:       true,
 		PermissionEnable: true,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
 		Auth:             Auth,
 	})
 	if permisison {

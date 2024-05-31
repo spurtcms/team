@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Tbluser struct {
+type TblUser struct {
 	Id                   int       `gorm:"column:id"`
 	Uuid                 string    `gorm:"column:uuid"`
 	FirstName            string    `gorm:"column:first_name"`
@@ -49,20 +49,6 @@ type Filters struct {
 	FirstName string
 }
 
-type teamcreate struct {
-	FirstName        string
-	LastName         string
-	RoleId           int
-	Email            string
-	Username         string
-	Password         string
-	IsActive         int
-	DataAccess       int
-	MobileNo         string
-	ProfileImage     string
-	ProfileImagePath string
-}
-
 type TeamCreate struct {
 	FirstName        string
 	LastName         string
@@ -83,25 +69,25 @@ type TeamModel struct{}
 var tm TeamModel
 
 // get the list of users
-func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, DB *gorm.DB) (users []Tbluser, count int64, err error) {
+func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, DB *gorm.DB) (users []TblUser, count int64, err error) {
 
 	var Total_users int64
 
-	query := DB.Model(TblUser{}).Select("tbl_users.id,tbl_users.uuid,tbl_users.role_id,tbl_users.first_name,tbl_users.last_name,tbl_users.email,tbl_users.password,tbl_users.username,tbl_users.mobile_no,tbl_users.profile_image,tbl_users.profile_image_path,tbl_users.created_on,tbl_users.created_by,tbl_users.modified_on,tbl_users.modified_by,tbl_users.is_active,tbl_users.is_deleted,tbl_users.deleted_on,tbl_users.deleted_by,tbl_users.data_access,tbl_roles.name as role_name").
+	query := DB.Table("tbl_users").Select("tbl_users.id,tbl_users.uuid,tbl_users.role_id,tbl_users.first_name,tbl_users.last_name,tbl_users.email,tbl_users.password,tbl_users.username,tbl_users.mobile_no,tbl_users.profile_image,tbl_users.profile_image_path,tbl_users.created_on,tbl_users.created_by,tbl_users.modified_on,tbl_users.modified_by,tbl_users.is_active,tbl_users.is_deleted,tbl_users.deleted_on,tbl_users.deleted_by,tbl_users.data_access,tbl_roles.name as role_name").
 		Joins("inner join tbl_roles on tbl_users.role_id = tbl_roles.id").Where("tbl_users.is_deleted=?", 0)
 
 	if filter.Keyword != "" {
 
-		query = query.Where("(LOWER(TRIM(tbl_users.first_name)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%").
-			Or("LOWER(TRIM(tbl_users.last_name)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%").
-			Or("LOWER(TRIM(tbl_roles.name)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%").
-			Or("LOWER(TRIM(tbl_users.username)) ILIKE LOWER(TRIM(?)))", "%"+filter.Keyword+"%")
+		query = query.Where("(LOWER(TRIM(tbl_users.first_name)) LIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%").
+			Or("LOWER(TRIM(tbl_users.last_name)) LIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%").
+			Or("LOWER(TRIM(tbl_roles.name)) LIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%").
+			Or("LOWER(TRIM(tbl_users.username)) LIKE LOWER(TRIM(?)))", "%"+filter.Keyword+"%")
 
 	}
 
 	if filter.FirstName != "" {
 
-		query = query.Debug().Where("LOWER(TRIM(tbl_users.first_name)) ILIKE LOWER(TRIM(?))"+" OR LOWER(TRIM(tbl_users.last_name)) ILIKE LOWER(TRIM(?))", "%"+filter.FirstName+"%", "%"+filter.FirstName+"%")
+		query = query.Debug().Where("LOWER(TRIM(tbl_users.first_name)) LIKE LOWER(TRIM(?))"+" OR LOWER(TRIM(tbl_users.last_name)) LIKE LOWER(TRIM(?))", "%"+filter.FirstName+"%", "%"+filter.FirstName+"%")
 
 	}
 
@@ -125,18 +111,18 @@ func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, DB
 
 	if err1 := query.Error; err1 != nil {
 
-		return []Tbluser{}, 0, err1
+		return []TblUser{}, 0, err1
 
 	}
 
-	return []Tbluser{}, Total_users, nil
+	return []TblUser{}, Total_users, nil
 
 }
 
 // This func will help to create a user in your database
 func (t TeamModel) CreateUser(user *TblUser, DB *gorm.DB) (team TblUser, terr error) {
 
-	if err := DB.Model(TblUser{}).Create(&user).Error; err != nil {
+	if err := DB.Table("tbl_users").Create(&user).Error; err != nil {
 
 		return TblUser{}, err
 
@@ -146,7 +132,7 @@ func (t TeamModel) CreateUser(user *TblUser, DB *gorm.DB) (team TblUser, terr er
 }
 
 // update user
-func (t TeamModel) UpdateUser(user *Tbluser, DB *gorm.DB) (team Tbluser, terr error) {
+func (t TeamModel) UpdateUser(user *TblUser, DB *gorm.DB) (team TblUser, terr error) {
 
 	query := DB.Table("tbl_users").Where("id=?", user.Id)
 
@@ -167,21 +153,21 @@ func (t TeamModel) UpdateUser(user *Tbluser, DB *gorm.DB) (team Tbluser, terr er
 
 		if err := query.Error; err != nil {
 
-			return Tbluser{}, err
+			return TblUser{}, err
 		}
 
 	} else {
 
 		if err := query.UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "role_id": user.RoleId, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "is_active": user.IsActive, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "profile_image": user.ProfileImage, "profile_image_path": user.ProfileImagePath, "data_access": user.DataAccess, "password": user.Password}).Error; err != nil {
 
-			return Tbluser{}, err
+			return TblUser{}, err
 		}
 	}
 	return *user, nil
 }
 
 // delete team user
-func (t TeamModel) DeleteUser(user *Tbluser, DB *gorm.DB) error {
+func (t TeamModel) DeleteUser(user *TblUser, DB *gorm.DB) error {
 
 	if err := DB.Model(&TblUser{}).Where("id=?", user.Id).Updates(TblUser{IsDeleted: user.IsDeleted, DeletedOn: user.DeletedOn, DeletedBy: user.DeletedBy}).Error; err != nil {
 
@@ -194,7 +180,7 @@ func (t TeamModel) DeleteUser(user *Tbluser, DB *gorm.DB) error {
 // user last login update
 func (t TeamModel) Lastlogin(id int, log_time time.Time, DB *gorm.DB) error {
 
-	if err := DB.Model(TblUser{}).Where("id=? ", id).Update("last_login", log_time).Error; err != nil {
+	if err := DB.Table("tbl_users").Where("id=? ", id).Update("last_login", log_time).Error; err != nil {
 
 		return err
 	}
@@ -213,12 +199,12 @@ func (t TeamModel) GetUserDetailsTeam(user *TblUser, id int, DB *gorm.DB) error 
 
 func (t TeamModel) CheckValidation(user *TblUser, email, username, mobile string, userid int, DB *gorm.DB) error {
 	if userid == 0 {
-		if err := DB.Model(TblUser{}).Where("mobile_no = ? or LOWER(TRIM(email))=LOWER(TRIM(?)) or username = ?   and is_deleted=0", mobile, email, username).First(&user).Error; err != nil {
+		if err := DB.Table("tbl_users").Where("mobile_no = ? or LOWER(TRIM(email))=LOWER(TRIM(?)) or username = ?   and is_deleted=0", mobile, email, username).First(&user).Error; err != nil {
 
 			return err
 		}
 	} else {
-		if err := DB.Model(TblUser{}).Where("mobile_no = ? or LOWER(TRIM(email))=LOWER(TRIM(?)) or username = ? and id not in (?) and is_deleted=0", mobile, email, username, userid).First(&user).Error; err != nil {
+		if err := DB.Table("tbl_users").Where("mobile_no = ? or LOWER(TRIM(email))=LOWER(TRIM(?)) or username = ? and id not in (?) and is_deleted=0", mobile, email, username, userid).First(&user).Error; err != nil {
 
 			return err
 		}
@@ -231,12 +217,12 @@ func (t TeamModel) CheckValidation(user *TblUser, email, username, mobile string
 func (t TeamModel) CheckEmail(user *TblUser, email string, userid int, DB *gorm.DB) error {
 
 	if userid == 0 {
-		if err := DB.Model(TblUser{}).Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and is_deleted = 0 ", email).First(&user).Error; err != nil {
+		if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and is_deleted = 0 ", email).First(&user).Error; err != nil {
 
 			return err
 		}
 	} else {
-		if err := DB.Model(TblUser{}).Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and id not in(?) and is_deleted= 0 ", email, userid).First(&user).Error; err != nil {
+		if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and id not in(?) and is_deleted= 0 ", email, userid).First(&user).Error; err != nil {
 
 			return err
 		}
@@ -246,12 +232,12 @@ func (t TeamModel) CheckEmail(user *TblUser, email string, userid int, DB *gorm.
 
 func (t TeamModel) CheckNumber(user *TblUser, mobile string, userid int, DB *gorm.DB) error {
 	if userid == 0 {
-		if err := DB.Model(TblUser{}).Where("mobile_no = ? and is_deleted=0", mobile).First(&user).Error; err != nil {
+		if err := DB.Table("tbl_users").Where("mobile_no = ? and is_deleted=0", mobile).First(&user).Error; err != nil {
 
 			return err
 		}
 	} else {
-		if err := DB.Model(TblUser{}).Where("mobile_no = ? and id not in (?) and is_deleted=0", mobile, userid).First(&user).Error; err != nil {
+		if err := DB.Table("tbl_users").Where("mobile_no = ? and id not in (?) and is_deleted=0", mobile, userid).First(&user).Error; err != nil {
 
 			return err
 		}
@@ -264,7 +250,7 @@ func (t TeamModel) CheckNumber(user *TblUser, mobile string, userid int, DB *gor
 // Rolechekc
 func (t TeamModel) CheckRoleUsed(user *TblUser, roleid int, DB *gorm.DB) error {
 
-	if err := DB.Model(TblUser{}).Where("role_id=? and is_deleted =0", roleid).First(user).Error; err != nil {
+	if err := DB.Table("tbl_users").Where("role_id=? and is_deleted =0", roleid).First(user).Error; err != nil {
 		return err
 	}
 	return nil
@@ -272,11 +258,11 @@ func (t TeamModel) CheckRoleUsed(user *TblUser, roleid int, DB *gorm.DB) error {
 }
 
 // getuserbyid
-func (t TeamModel) GetUserById(id int, DB *gorm.DB) (user Tbluser, err error) {
+func (t TeamModel) GetUserById(id int, DB *gorm.DB) (user TblUser, err error) {
 
 	if err := DB.Table("tbl_users").Where("id=?", id).First(&user).Error; err != nil {
 
-		return Tbluser{}, err
+		return TblUser{}, err
 	}
 	return user, nil
 }
@@ -318,7 +304,7 @@ func (t TeamModel) ChangeAccess(user *TblUser, userIds []int, DB *gorm.DB) error
 
 func (t TeamModel) SelectedUserStatusChange(userStatus *TblUser, userIds []int, DB *gorm.DB) error {
 
-	if err := DB.Debug().Model(TblUser{}).Where("id in (?)", userIds).UpdateColumns(map[string]interface{}{"is_active": userStatus.IsActive, "modified_by": userStatus.ModifiedBy, "modified_on": userStatus.ModifiedOn}).Error; err != nil {
+	if err := DB.Debug().Table("tbl_users").Where("id in (?)", userIds).UpdateColumns(map[string]interface{}{"is_active": userStatus.IsActive, "modified_by": userStatus.ModifiedBy, "modified_on": userStatus.ModifiedOn}).Error; err != nil {
 
 		return err
 	}

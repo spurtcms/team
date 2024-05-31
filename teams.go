@@ -5,40 +5,40 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/spurtcms/team/migration"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Channelsetup used to initialie channel configuration
 func TeamSetup(config Config) *Teams {
 
-	MigrationTables(config.DB)
+	migration.AutoMigration(config.DB, config.DataBaseType)
 
 	return &Teams{
 		DB:               config.DB,
 		AuthEnable:       config.AuthEnable,
 		PermissionEnable: config.PermissionEnable,
-		Authenticate:     config.Authenticate,
 		Auth:             config.Auth,
 	}
 
 }
 
 // get the all list users
-func (team *Teams) ListUser(limit, offset int, filter Filters) (tbluserr []Tbluser, totoaluser int64, err error) {
+func (team *Teams) ListUser(limit, offset int, filter Filters) (tbluserr []TblUser, totoaluser int64, err error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return []Tbluser{}, 0, AuthError
+		return []TblUser{}, 0, AuthError
 	}
 
 	UserList, _, terr := tm.GetUsersList(offset, limit, filter, false, team.DB)
 
 	if terr != nil {
 
-		return []Tbluser{}, 0, terr
+		return []TblUser{}, 0, terr
 	}
 
-	var userlists []Tbluser
+	var userlists []TblUser
 
 	for _, val := range UserList {
 
@@ -126,18 +126,18 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, terr e
 }
 
 // update user.
-func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser Tbluser, terr error) {
+func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser TblUser, terr error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return Tbluser{}, AuthError
+		return TblUser{}, AuthError
 	}
 
 	user_id := userid
 
 	password := teamcreate.Password
 
-	var user Tbluser
+	var user TblUser
 
 	if password != "" {
 
@@ -176,7 +176,7 @@ func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser Tbl
 
 	if err != nil {
 
-		return Tbluser{}, err
+		return TblUser{}, err
 	}
 
 	return User, nil
@@ -309,9 +309,9 @@ func (team *Teams) CheckRoleUsed(roleid int) (bool, error) {
 		return false, AuthError
 	}
 
-	var Tbluser TblUser
+	var TblUser TblUser
 
-	err := tm.CheckRoleUsed(&Tbluser, roleid, team.DB)
+	err := tm.CheckRoleUsed(&TblUser, roleid, team.DB)
 
 	if err != nil {
 
@@ -323,19 +323,19 @@ func (team *Teams) CheckRoleUsed(roleid int) (bool, error) {
 }
 
 // get team by id
-func (team *Teams) GetUserById(Userid int) (tbluser Tbluser, err error) {
+func (team *Teams) GetUserById(Userid int) (tbluser TblUser, err error) {
 
 	//check if auth or permission enabled
 	if autherr := AuthandPermission(team); autherr != nil {
 
-		return Tbluser{}, autherr
+		return TblUser{}, autherr
 	}
 
 	user, err := tm.GetUserById(Userid, team.DB)
 
 	if err != nil {
 
-		return Tbluser{}, err
+		return TblUser{}, err
 	}
 
 	return user, nil
@@ -356,7 +356,6 @@ func (team *Teams) CheckUsername(username string, userid int) (bool, error) {
 
 	return true, nil
 }
-
 
 // change user Access for multiple user
 func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int) error {
@@ -380,7 +379,7 @@ func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int) error
 }
 
 // change active status
-func (team *Teams) ChangeActiveStatus(userId int, activeStatus int,modifiedby int) (bool, error) {
+func (team *Teams) ChangeActiveStatus(userId int, activeStatus int, modifiedby int) (bool, error) {
 
 	var userStatus TblUser
 
