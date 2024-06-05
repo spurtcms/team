@@ -31,7 +31,10 @@ func (team *Teams) ListUser(limit, offset int, filter Filters) (tbluserr []TblUs
 		return []TblUser{}, 0, AuthError
 	}
 
-	UserList, _, terr := tm.GetUsersList(offset, limit, filter, false, team.DB)
+	tm.Userid = team.Userid
+	tm.Dataaccess = team.Dataaccess
+
+	UserList, _, terr := tm.GetUsersList(offset, limit, filter, false, true, team.DB)
 
 	if terr != nil {
 
@@ -63,7 +66,7 @@ func (team *Teams) ListUser(limit, offset int, filter Filters) (tbluserr []TblUs
 
 	}
 
-	_, usercount, _ := tm.GetUsersList(0, 0, filter, false, team.DB)
+	_, usercount, _ := tm.GetUsersList(0, 0, filter, false, true, team.DB)
 
 	return userlists, usercount, nil
 

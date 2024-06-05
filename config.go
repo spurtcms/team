@@ -26,4 +26,6 @@ type Teams struct {
 	PermissionEnable bool
 	Authenticate     auth.Authentication
 	Auth             *auth.Auth
+	Userid           int
+	Dataaccess       int
 }

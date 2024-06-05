@@ -64,17 +64,25 @@ type TeamCreate struct {
 	CreatedBy        int
 }
 
-type TeamModel struct{}
+type TeamModel struct {
+	Dataaccess int
+	Userid     int
+}
 
 var tm TeamModel
 
 // get the list of users
-func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, DB *gorm.DB) (users []TblUser, count int64, err error) {
+func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, createonly bool, DB *gorm.DB) (users []TblUser, count int64, err error) {
 
 	var Total_users int64
 
 	query := DB.Table("tbl_users").Select("tbl_users.id,tbl_users.uuid,tbl_users.role_id,tbl_users.first_name,tbl_users.last_name,tbl_users.email,tbl_users.password,tbl_users.username,tbl_users.mobile_no,tbl_users.profile_image,tbl_users.profile_image_path,tbl_users.created_on,tbl_users.created_by,tbl_users.modified_on,tbl_users.modified_by,tbl_users.is_active,tbl_users.is_deleted,tbl_users.deleted_on,tbl_users.deleted_by,tbl_users.data_access,tbl_roles.name as role_name").
 		Joins("inner join tbl_roles on tbl_users.role_id = tbl_roles.id").Where("tbl_users.is_deleted=?", 0)
+
+	if createonly && t.Dataaccess == 1 {
+
+		query = query.Where("tbl_users.created_by = ?", t.Userid)
+	}
 
 	if filter.Keyword != "" {
 
@@ -271,14 +279,14 @@ func (t TeamModel) GetUserById(id int, DB *gorm.DB) (user TblUser, err error) {
 func (t TeamModel) CheckUsername(user *TblUser, username string, userid int, DB *gorm.DB) error {
 
 	if userid == 0 {
-		
+
 		if err := DB.Table("tbl_users").Where("username = ? and is_deleted=0", username).First(&user).Error; err != nil {
 
 			return err
 		}
 
 	} else {
-		
+
 		if err := DB.Table("tbl_users").Where("username = ? and id not in (?) and is_deleted=0", username, userid).First(&user).Error; err != nil {
 
 			return err
