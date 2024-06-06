@@ -353,3 +353,21 @@ func (t TeamModel) ChangeActiveUser(user *TblUser, userId int, DB *gorm.DB) erro
 
 	return nil
 }
+
+func (t TeamModel) NewuserCount(DB *gorm.DB) (count int64, err error) {
+
+	if err := DB.Table("tbl_users").Where("is_deleted = 0 AND created_on >=?", time.Now().AddDate(0, 0, -10)).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+
+}
+
+func (t TeamModel) UserCount(DB *gorm.DB) (count int64, err error) {
+
+	if err := DB.Table("tbl_users").Where("is_deleted = 0 ").Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+
+}

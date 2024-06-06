@@ -46,22 +46,15 @@ func (team *Teams) ListUser(limit, offset int, filter Filters) (tbluserr []TblUs
 	for _, val := range UserList {
 
 		var first = val.FirstName
-
 		var last = val.LastName
-
 		var firstn = strings.ToUpper(first[:1])
-
 		var lastn string
-
 		if val.LastName != "" {
-
 			lastn = strings.ToUpper(last[:1])
 		}
 
 		var Name = firstn + lastn
-
 		val.NameString = Name
-
 		userlists = append(userlists, val)
 
 	}
@@ -81,41 +74,25 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, terr e
 	}
 
 	password := teamcreate.Password
-
 	uvuid := (uuid.New()).String()
-
 	hash_pass := hashingPassword(password)
 
 	var user TblUser
 
 	user.Uuid = uvuid
-
 	user.RoleId = teamcreate.RoleId
-
 	user.FirstName = teamcreate.FirstName
-
 	user.LastName = teamcreate.LastName
-
 	user.Email = teamcreate.Email
-
 	user.Username = teamcreate.Username
-
 	user.Password = hash_pass
-
 	user.MobileNo = teamcreate.MobileNo
-
 	user.IsActive = teamcreate.IsActive
-
 	user.DataAccess = teamcreate.DataAccess
-
 	user.ProfileImage = teamcreate.ProfileImage
-
 	user.ProfileImagePath = teamcreate.ProfileImagePath
-
 	user.DefaultLanguageId = 1
-
 	user.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-
 	user.CreatedBy = teamcreate.CreatedBy
 
 	newuser, err := tm.CreateUser(&user, team.DB)
@@ -143,36 +120,22 @@ func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser Tbl
 	var user TblUser
 
 	if password != "" {
-
 		hash_pass := hashingPassword(password)
-
 		user.Password = hash_pass
 	}
 
 	user.Id = user_id
-
 	user.RoleId = teamcreate.RoleId
-
 	user.FirstName = teamcreate.FirstName
-
 	user.LastName = teamcreate.LastName
-
 	user.Email = teamcreate.Email
-
 	user.Username = teamcreate.Username
-
 	user.MobileNo = teamcreate.MobileNo
-
 	user.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-
 	user.ModifiedBy = user_id
-
 	user.IsActive = teamcreate.IsActive
-
 	user.DataAccess = teamcreate.DataAccess
-
 	user.ProfileImage = teamcreate.ProfileImage
-
 	user.ProfileImagePath = teamcreate.ProfileImagePath
 
 	User, err := tm.UpdateUser(&user, team.DB)
@@ -193,12 +156,11 @@ func (team *Teams) DeleteUser(usersIds []int, userid int, deletedby int) error {
 
 		return AuthError
 	}
+
 	var user TblUser
 
 	user.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-
 	user.DeletedBy = deletedby
-
 	user.IsDeleted = 1
 
 	err := tm.DeleteMultipleUser(&user, usersIds, userid, team.DB)
@@ -366,9 +328,7 @@ func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int) error
 	var user TblUser
 
 	user.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-
 	user.ModifiedBy = modifiedby
-
 	user.DataAccess = status
 
 	err := tm.ChangeAccess(&user, userIds, team.DB)
@@ -387,9 +347,7 @@ func (team *Teams) ChangeActiveStatus(userId int, activeStatus int, modifiedby i
 	var userStatus TblUser
 
 	userStatus.ModifiedBy = modifiedby
-
 	userStatus.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-
 	userStatus.IsActive = activeStatus
 
 	err := tm.ChangeActiveUser(&userStatus, userId, team.DB)
@@ -410,9 +368,7 @@ func (team *Teams) SelectedUserStatusChange(userIds []int, activeStatus int, mod
 	var userActiveStatus TblUser
 
 	userActiveStatus.ModifiedBy = modifiedby
-
 	userActiveStatus.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-
 	userActiveStatus.IsActive = activeStatus
 
 	err := tm.SelectedUserStatusChange(&userActiveStatus, userIds, team.DB)
@@ -424,4 +380,24 @@ func (team *Teams) SelectedUserStatusChange(userIds []int, activeStatus int, mod
 
 	return nil
 
+}
+
+// Dashboard usercount function
+func (team *Teams) DashboardUserCount() (totalcount int, lasttendayscount int, err error) {
+
+	if autherr := AuthandPermission(team); autherr != nil {
+		return 0, 0, autherr
+	}
+
+	allusercount, err := tm.UserCount(team.DB)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	lusercount, err := tm.NewuserCount(team.DB)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return int(allusercount), int(lusercount), nil
 }
