@@ -362,7 +362,6 @@ func (team *Teams) ChangeActiveStatus(userId int, activeStatus int, modifiedby i
 }
 
 // change active Status for multiple users
-
 func (team *Teams) SelectedUserStatusChange(userIds []int, activeStatus int, modifiedby int) error {
 
 	var userActiveStatus TblUser
@@ -400,4 +399,36 @@ func (team *Teams) DashboardUserCount() (totalcount int, lasttendayscount int, e
 	}
 
 	return int(allusercount), int(lusercount), nil
+}
+
+func (team *Teams) ChangeYourPassword(password string, userid int) (success bool, err error) {
+
+	if autherr := AuthandPermission(team); autherr != nil {
+		return false, autherr
+	}
+
+	var tbluser TblUser
+	tbluser.Id = userid
+	hash_pass := hashingPassword(password)
+	tbluser.Password = hash_pass
+	tbluser.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	tbluser.ModifiedBy = 1
+
+	cerr := tm.ChangePasswordById(&tbluser, team.DB)
+	if cerr != nil {
+		return false, cerr
+	}
+
+	return true, nil
+}
+
+func (team *Teams) GetAdminRoleUsers(roleid []int) (userlist []TblUser, err error) {
+
+	if autherr := AuthandPermission(team); autherr != nil {
+		return []TblUser{}, autherr
+	}
+	userslist, _ := tm.GetAdminRoleUsers(roleid, team.DB)
+
+	return userslist, nil
+
 }

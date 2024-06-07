@@ -27,6 +27,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/spurtcms/auth v0.0.0-20240422143037-2687a406bba1 h1:6M/Y3cycWMYaZK1nA+kCMsxoMmYNVynRRpM1gcVSk9o=
 github.com/spurtcms/auth v0.0.0-20240422143037-2687a406bba1/go.mod h1:R/BQhE+PUZ/eGTgS23lv62uWkzfu/NzVWHxibC6yu1g=
+github.com/spurtcms/auth v0.0.6 h1:mQ4Dk3ghv/zIkjHtEAEl8yF/rrbVeZRIdmnLEmBw/lU=
+github.com/spurtcms/auth v0.0.6/go.mod h1:1u46UkHWHcsN99jNGCaei0/75rslezIpOGITEhVkvAM=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=

@@ -371,3 +371,22 @@ func (t TeamModel) UserCount(DB *gorm.DB) (count int64, err error) {
 	return count, nil
 
 }
+
+func (t TeamModel) ChangePasswordById(user *TblUser, DB *gorm.DB) error {
+
+	if err := DB.Table("tbl_users").Where("id=?", user.Id).Updates(TblUser{Password: user.Password, ModifiedOn: user.ModifiedOn, ModifiedBy: user.ModifiedBy}).Error; err != nil {
+
+		return err
+	}
+	return nil
+}
+
+func (t TeamModel) GetAdminRoleUsers(roleid []int, DB *gorm.DB) (userlist []TblUser, err error) {
+
+	if err := DB.Table("tbl_users").Where("role_id in (?) and is_active=1 and is_deleted=0", roleid).Find(&userlist).Error; err != nil {
+
+		return []TblUser{}, err
+	}
+	return userlist, nil
+
+}
