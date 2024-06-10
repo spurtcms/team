@@ -288,22 +288,22 @@ func (team *Teams) CheckRoleUsed(roleid int) (bool, error) {
 }
 
 // get team by id
-func (team *Teams) GetUserById(Userid int) (tbluser TblUser, err error) {
+func (team *Teams) GetUserById(Userid int, Userids []int) (tbluser TblUser, users []TblUser, err error) {
 
 	//check if auth or permission enabled
 	if autherr := AuthandPermission(team); autherr != nil {
 
-		return TblUser{}, autherr
+		return TblUser{}, []TblUser{}, autherr
 	}
 
-	user, err := tm.GetUserById(Userid, team.DB)
+	user, users, err := tm.GetUserById(Userid, Userids, team.DB)
 
 	if err != nil {
 
-		return TblUser{}, err
+		return TblUser{}, []TblUser{}, err
 	}
 
-	return user, nil
+	return user, users, nil
 
 }
 
@@ -431,4 +431,43 @@ func (team *Teams) GetAdminRoleUsers(roleid []int) (userlist []TblUser, err erro
 
 	return userslist, nil
 
+}
+
+func (team *Teams) UpdateMyUser(userupdate TeamCreate, userid int) error {
+
+	if autherr := AuthandPermission(team); autherr != nil {
+		return autherr
+	}
+
+	if userupdate.FirstName == "" || userupdate.Email == "" || userupdate.Username == "" || userupdate.MobileNo == "" {
+		return ErrorValidation
+	}
+
+	password := userupdate.Password
+
+	var user TblUser
+	if password != "" {
+		hash_pass := hashingPassword(password)
+		user.Password = hash_pass
+	}
+
+	user.Id = userid
+	user.FirstName = userupdate.FirstName
+	user.LastName = userupdate.LastName
+	user.Email = userupdate.Email
+	user.Username = userupdate.Username
+	user.MobileNo = userupdate.MobileNo
+	user.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	user.ModifiedBy = userid
+	user.DataAccess = userupdate.DataAccess
+	user.ProfileImage = userupdate.ProfileImage
+	user.ProfileImagePath = userupdate.ProfileImagePath
+
+	err := tm.UpdateMyuser(&user, team.DB)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -10,6 +10,7 @@ import (
 var (
 	ErrorAuth       = errors.New("auth enabled not initialised")
 	ErrorPermission = errors.New("permissions enabled not initialised")
+	ErrorValidation = errors.New("given some values is empty")
 )
 
 // HashingPassword pass the arguments password it will return the bcrypt hashed password

@@ -266,13 +266,24 @@ func (t TeamModel) CheckRoleUsed(user *TblUser, roleid int, DB *gorm.DB) error {
 }
 
 // getuserbyid
-func (t TeamModel) GetUserById(id int, DB *gorm.DB) (user TblUser, err error) {
+func (t TeamModel) GetUserById(id int, ids []int, DB *gorm.DB) (user TblUser, users []TblUser, err error) {
 
-	if err := DB.Table("tbl_users").Where("id=?", id).First(&user).Error; err != nil {
+	if id != 0 {
 
-		return TblUser{}, err
+		if err := DB.Table("tbl_users").Where("id=?", id).First(&user).Error; err != nil {
+
+			return TblUser{}, []TblUser{}, err
+		}
+
+	} else if len(ids) > 0 {
+
+		if err := DB.Table("tbl_users").Where("id in (?)", ids).Find(&users).Error; err != nil {
+
+			return TblUser{}, []TblUser{}, err
+		}
 	}
-	return user, nil
+
+	return user, users, nil
 }
 
 // check username
@@ -389,4 +400,40 @@ func (t TeamModel) GetAdminRoleUsers(roleid []int, DB *gorm.DB) (userlist []TblU
 	}
 	return userlist, nil
 
+}
+
+func (t TeamModel) UpdateMyuser(user *TblUser, DB *gorm.DB) error {
+
+	query := DB.Table("tbl_users").Where("id=?", user.Id)
+
+	if user.ProfileImage == "" || user.Password == "" {
+
+		if user.Password == "" && user.ProfileImage == "" {
+
+			query = query.Omit("password", "profile_image", "profile_image_path").UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "data_access": user.DataAccess})
+
+		} else if user.ProfileImage == "" {
+
+			query = query.Omit("profile_image", "profile_image_path").UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "data_access": user.DataAccess, "password": user.Password})
+
+		} else if user.Password == "" {
+
+			query = query.Omit("password").UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "profile_image": user.ProfileImage, "profile_image_path": user.ProfileImagePath, "data_access": user.DataAccess})
+		}
+
+		if err := query.Error; err != nil {
+
+			return err
+		}
+
+	} else {
+
+		if err := query.UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "profile_image": user.ProfileImage, "profile_image_path": user.ProfileImagePath, "data_access": user.DataAccess, "password": user.Password}).Error; err != nil {
+
+			return err
+		}
+
+	}
+
+	return nil
 }
