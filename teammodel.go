@@ -19,6 +19,7 @@ type TblUser struct {
 	IsActive             int       `gorm:"column:is_active"`
 	ProfileImage         string    `gorm:"column:profile_image"`
 	ProfileImagePath     string    `gorm:"column:profile_image_path"`
+	StorageType          string    `gorm:"column:storage_type"`
 	DataAccess           int       `gorm:"column:data_access"`
 	CreatedOn            time.Time `gorm:"column:created_on"`
 	CreatedBy            int       `gorm:"column:created_by"`
@@ -62,6 +63,7 @@ type TeamCreate struct {
 	ProfileImage     string
 	ProfileImagePath string
 	CreatedBy        int
+	StorageType      string
 }
 
 type TeamModel struct {
@@ -76,8 +78,7 @@ func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, cr
 
 	var Total_users int64
 
-	query := DB.Table("tbl_users").Select("tbl_users.id,tbl_users.uuid,tbl_users.role_id,tbl_users.first_name,tbl_users.last_name,tbl_users.email,tbl_users.password,tbl_users.username,tbl_users.mobile_no,tbl_users.profile_image,tbl_users.profile_image_path,tbl_users.created_on,tbl_users.created_by,tbl_users.modified_on,tbl_users.modified_by,tbl_users.is_active,tbl_users.is_deleted,tbl_users.deleted_on,tbl_users.deleted_by,tbl_users.data_access,tbl_roles.name as role_name").
-		Joins("inner join tbl_roles on tbl_users.role_id = tbl_roles.id").Where("tbl_users.is_deleted=?", 0)
+	query := DB.Table("tbl_users").Select("tbl_users.id,tbl_users.uuid,tbl_users.role_id,tbl_users.first_name,tbl_users.last_name,tbl_users.email,tbl_users.password,tbl_users.username,tbl_users.mobile_no,tbl_users.profile_image,tbl_users.profile_image_path,tbl_users.created_on,tbl_users.created_by,tbl_users.modified_on,tbl_users.modified_by,tbl_users.is_active,tbl_users.is_deleted,tbl_users.deleted_on,tbl_users.deleted_by,tbl_users.data_access,tbl_roles.name as role_name,tbl_users.storage_type").Joins("inner join tbl_roles on tbl_users.role_id = tbl_roles.id").Where("tbl_users.is_deleted=?", 0)
 
 	if createonly && t.Dataaccess == 1 {
 

@@ -94,6 +94,7 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, terr e
 	user.DefaultLanguageId = 1
 	user.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 	user.CreatedBy = teamcreate.CreatedBy
+	user.StorageType = teamcreate.StorageType
 
 	newuser, err := tm.CreateUser(&user, team.DB)
 
@@ -137,6 +138,7 @@ func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int) (createuser Tbl
 	user.DataAccess = teamcreate.DataAccess
 	user.ProfileImage = teamcreate.ProfileImage
 	user.ProfileImagePath = teamcreate.ProfileImagePath
+	user.StorageType = teamcreate.StorageType
 
 	User, err := tm.UpdateUser(&user, team.DB)
 
