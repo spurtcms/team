@@ -17,8 +17,8 @@ type TblRole struct {
 	CreatedBy   int       `gorm:"type:integer"`
 	ModifiedOn  time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 	ModifiedBy  int       `gorm:"DEFAULT:NULL;type:integer"`
+	TenantId    int       `gorm:"type:integer"`
 }
-
 
 type TblUser struct {
 	Id                int       `gorm:"primaryKey;type:serial"`
@@ -43,6 +43,7 @@ type TblUser struct {
 	IsDeleted         int       `gorm:"type:integer"`
 	DeletedOn         time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 	DeletedBy         int       `gorm:"DEFAULT:NULL"`
+	TenantId          int       `gorm:"type:integer"`
 }
 
 func MigrationTables(db *gorm.DB) {
