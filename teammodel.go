@@ -1,8 +1,10 @@
 package team
 
 import (
+	"fmt"
 	"time"
-"fmt"
+
+	teamroles "github.com/spurtcms/team-roles"
 	"gorm.io/gorm"
 )
 
@@ -39,7 +41,8 @@ type TblUser struct {
 	RoleName             string    `gorm:"-:migration;<-:false"`
 	DefaultLanguageId    int       `gorm:"column:default_language_id"`
 	NameString           string    `gorm:"-"`
-	TenantId             int
+	TenantId             int       `gorm:"column:tenant_id"`
+	Role                 teamroles.TblRole  `gorm:"foreignKey:Id"`
 }
 
 type Filters struct {
@@ -71,6 +74,19 @@ type TeamCreate struct {
 type TeamModel struct {
 	Dataaccess int
 	Userid     int
+}
+
+type Team struct {
+	Id         int
+	Limit      int
+	Offset     int
+	Keyword    string
+	FirstName  string
+	TenantId   int
+	IsActive   bool
+	CreateOnly bool
+	Count      bool
+	Role       bool
 }
 
 var tm TeamModel
@@ -437,6 +453,48 @@ func (t TeamModel) UpdateMyuser(user *TblUser, DB *gorm.DB, tenantid int) error 
 			return err
 		}
 
+	}
+
+	return nil
+}
+
+func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) error {
+
+	query := DB.Debug().Model(TblUser{}).Where("is_deleted = 0")
+
+	if inputs.CreateOnly && team.Dataaccess == 1 {
+
+		query = query.Where("tbl_users.created_by = ?", team.Userid)
+	}
+
+	if inputs.Keyword != "" {
+
+		query = query.Where("(LOWER(TRIM(tbl_users.first_name)) LIKE LOWER(TRIM(?))", "%"+inputs.Keyword+"%").
+			Or("LOWER(TRIM(tbl_users.last_name)) LIKE LOWER(TRIM(?))", "%"+inputs.Keyword+"%").
+			Or("LOWER(TRIM(tbl_roles.name)) LIKE LOWER(TRIM(?))", "%"+inputs.Keyword+"%").
+			Or("LOWER(TRIM(tbl_users.username)) LIKE LOWER(TRIM(?)))", "%"+inputs.Keyword+"%")
+
+	}
+
+	if inputs.FirstName != "" {
+
+		query = query.Debug().Where("LOWER(TRIM(tbl_users.first_name)) LIKE LOWER(TRIM(?))"+" OR LOWER(TRIM(tbl_users.last_name)) LIKE LOWER(TRIM(?))", "%"+inputs.FirstName+"%", "%"+inputs.FirstName+"%")
+
+	}
+
+	if inputs.TenantId != 0 {
+
+		query = query.Where("tbl_users.tenant_id=?", inputs.TenantId)
+	}
+
+	if inputs.Role {
+
+		query.Preload("Role", "is_deleted=?", 0)
+	}
+
+	if err := query.First(&user).Error; err != nil {
+
+		return err
 	}
 
 	return nil

@@ -310,6 +310,27 @@ func (team *Teams) GetUserById(Userid int, Userids []int,tenantid int) (tbluser 
 
 }
 
+func (team *Teams) UserDetails(inputs Team)(UserDetails TblUser,err error){
+
+	//check if auth or permission enabled
+	if autherr := AuthandPermission(team); autherr != nil {
+
+		return TblUser{},autherr
+	}
+
+	tm.Userid = team.Userid
+	tm.Dataaccess = team.Dataaccess
+
+	err = tm.GetUserDetails(team.DB,inputs,&UserDetails)
+
+	if err != nil {
+
+		return TblUser{},err
+	}
+
+	return UserDetails,nil
+}
+
 // check username
 func (team *Teams) CheckUsername(username string, userid int,tenantid int) (bool, error) {
 
