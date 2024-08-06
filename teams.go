@@ -1,6 +1,7 @@
 package team
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -34,7 +35,7 @@ func (team *Teams) ListUser(limit, offset int, filter Filters, Tenantid int) (tb
 	tm.Userid = team.Userid
 	tm.Dataaccess = team.Dataaccess
 
-	UserList, _, terr := tm.GetUsersList(offset, limit, filter, false, true, team.DB,Tenantid)
+	UserList, _, terr := tm.GetUsersList(offset, limit, filter, false, true, team.DB, Tenantid)
 
 	if terr != nil {
 
@@ -59,18 +60,17 @@ func (team *Teams) ListUser(limit, offset int, filter Filters, Tenantid int) (tb
 
 	}
 
-	_, usercount, _ := tm.GetUsersList(0, 0, filter, false, true, team.DB,Tenantid)
+	_, usercount, _ := tm.GetUsersList(0, 0, filter, false, true, team.DB, Tenantid)
 
 	return userlists, usercount, nil
 
 }
 
-// CreateUser create for your admin login.
-func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, terr error) {
+func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, UserId int, terr error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
-		return TblUser{}, AuthError
+		return TblUser{}, 0, AuthError
 	}
 
 	password := teamcreate.Password
@@ -97,18 +97,39 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, terr e
 	user.StorageType = teamcreate.StorageType
 	user.TenantId = teamcreate.TenantId
 
+	fmt.Println("user:", teamcreate.TenantId)
+
 	newuser, err := tm.CreateUser(&user, team.DB)
 
 	if err != nil {
 
-		return TblUser{}, err
+		return TblUser{}, 0, err
 	}
 
-	return newuser, nil
+	Userid, err := tm.GetUserByRole(teamcreate.RoleId, team.DB)
+
+	if err != nil {
+
+		return TblUser{}, 0, err
+	}
+
+	return newuser, Userid, nil
+}
+
+func (team *Teams) CreateTenantid(user TblMstrTenant) (int, error) {
+	id, err := tm.CreateTenantid(user, team.DB)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
+func (team *Teams) UpdateTenantId(UserId int, Tenantid int) {
+	tm.UpdateTenantId(UserId, Tenantid, team.DB)
 }
 
 // update user.
-func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int,tenantid int) (createuser TblUser, terr error) {
+func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int, tenantid int) (createuser TblUser, terr error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
@@ -141,7 +162,7 @@ func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int,tenantid int) (c
 	user.ProfileImagePath = teamcreate.ProfileImagePath
 	user.StorageType = teamcreate.StorageType
 
-	User, err := tm.UpdateUser(&user, team.DB,tenantid)
+	User, err := tm.UpdateUser(&user, team.DB, tenantid)
 
 	if err != nil {
 
@@ -153,7 +174,7 @@ func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int,tenantid int) (c
 }
 
 // delete user.
-func (team *Teams) DeleteUser(usersIds []int, userid int, deletedby int,tenantid int) error {
+func (team *Teams) DeleteUser(usersIds []int, userid int, deletedby int, tenantid int) error {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
@@ -166,7 +187,7 @@ func (team *Teams) DeleteUser(usersIds []int, userid int, deletedby int,tenantid
 	user.DeletedBy = deletedby
 	user.IsDeleted = 1
 
-	err := tm.DeleteMultipleUser(&user, usersIds, userid, team.DB,tenantid)
+	err := tm.DeleteMultipleUser(&user, usersIds, userid, team.DB, tenantid)
 
 	if err != nil {
 
@@ -177,11 +198,11 @@ func (team *Teams) DeleteUser(usersIds []int, userid int, deletedby int,tenantid
 }
 
 // check email is already exists in your database
-func (team *Teams) CheckEmail(Email string, userid int,tenantid int) (users TblUser, checl bool, errr error) {
+func (team *Teams) CheckEmail(Email string, userid int, tenantid int) (users TblUser, checl bool, errr error) {
 
 	var user TblUser
 
-	err := tm.CheckEmail(&user, Email, userid, team.DB,tenantid)
+	err := tm.CheckEmail(&user, Email, userid, team.DB, tenantid)
 
 	if err != nil {
 
@@ -192,11 +213,11 @@ func (team *Teams) CheckEmail(Email string, userid int,tenantid int) (users TblU
 }
 
 // check mobile
-func (team *Teams) CheckNumber(mobile string, userid int,tenantid int) (bool, error) {
+func (team *Teams) CheckNumber(mobile string, userid int, tenantid int) (bool, error) {
 
 	var user TblUser
 
-	err := tm.CheckNumber(&user, mobile, userid, team.DB,tenantid)
+	err := tm.CheckNumber(&user, mobile, userid, team.DB, tenantid)
 
 	if err != nil {
 
@@ -207,11 +228,11 @@ func (team *Teams) CheckNumber(mobile string, userid int,tenantid int) (bool, er
 }
 
 // Check username,email,number exsits or not validation
-func (team *Teams) CheckUserValidation(mobile string, email string, username string, userid int,tenantid int) (emaill bool, users bool, mobiles bool, err error) {
+func (team *Teams) CheckUserValidation(mobile string, email string, username string, userid int, tenantid int) (emaill bool, users bool, mobiles bool, err error) {
 
 	var user TblUser
 
-	err1 := tm.CheckValidation(&user, email, username, mobile, userid, team.DB,tenantid)
+	err1 := tm.CheckValidation(&user, email, username, mobile, userid, team.DB, tenantid)
 
 	if err1 != nil {
 
@@ -224,7 +245,7 @@ func (team *Teams) CheckUserValidation(mobile string, email string, username str
 /*check new password with old password*/
 /*if it's return false it does not match to the old password*/
 /*or return true it does match to the old password*/
-func (team *Teams) CheckPasswordwithOld(userid int, password string,tenantid int) (bool, error) {
+func (team *Teams) CheckPasswordwithOld(userid int, password string, tenantid int) (bool, error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
@@ -233,7 +254,7 @@ func (team *Teams) CheckPasswordwithOld(userid int, password string,tenantid int
 
 	var user TblUser
 
-	err := tm.GetUserDetailsTeam(&user, userid, team.DB,tenantid)
+	err := tm.GetUserDetailsTeam(&user, userid, team.DB, tenantid)
 
 	if err != nil {
 
@@ -252,14 +273,14 @@ func (team *Teams) CheckPasswordwithOld(userid int, password string,tenantid int
 }
 
 /*Logout Last Active*/
-func (team *Teams) LastLoginActivity(userid int,tenantid int) (err error) {
+func (team *Teams) LastLoginActivity(userid int, tenantid int) (err error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
 		return AuthError
 	}
 
-	Lerr := tm.Lastlogin(userid, time.Now(), team.DB,tenantid)
+	Lerr := tm.Lastlogin(userid, time.Now(), team.DB, tenantid)
 
 	if Lerr != nil {
 
@@ -270,7 +291,7 @@ func (team *Teams) LastLoginActivity(userid int,tenantid int) (err error) {
 }
 
 // Check role already used or not
-func (team *Teams) CheckRoleUsed(roleid int,tenantid int) (bool, error) {
+func (team *Teams) CheckRoleUsed(roleid int, tenantid int) (bool, error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
@@ -279,7 +300,7 @@ func (team *Teams) CheckRoleUsed(roleid int,tenantid int) (bool, error) {
 
 	var TblUser TblUser
 
-	err := tm.CheckRoleUsed(&TblUser, roleid, team.DB,tenantid)
+	err := tm.CheckRoleUsed(&TblUser, roleid, team.DB, tenantid)
 
 	if err != nil {
 
@@ -291,7 +312,7 @@ func (team *Teams) CheckRoleUsed(roleid int,tenantid int) (bool, error) {
 }
 
 // get team by id
-func (team *Teams) GetUserById(Userid int, Userids []int,tenantid int) (tbluser TblUser, users []TblUser, err error) {
+func (team *Teams) GetUserById(Userid int, Userids []int, tenantid int) (tbluser TblUser, users []TblUser, err error) {
 
 	//check if auth or permission enabled
 	if autherr := AuthandPermission(team); autherr != nil {
@@ -299,7 +320,7 @@ func (team *Teams) GetUserById(Userid int, Userids []int,tenantid int) (tbluser 
 		return TblUser{}, []TblUser{}, autherr
 	}
 
-	user, users, err := tm.GetUserById(Userid, Userids, team.DB,tenantid)
+	user, users, err := tm.GetUserById(Userid, Userids, team.DB, tenantid)
 
 	if err != nil {
 
@@ -310,33 +331,33 @@ func (team *Teams) GetUserById(Userid int, Userids []int,tenantid int) (tbluser 
 
 }
 
-func (team *Teams) UserDetails(inputs Team)(UserDetails TblUser,err error){
+func (team *Teams) UserDetails(inputs Team) (UserDetails TblUser, err error) {
 
 	//check if auth or permission enabled
 	if autherr := AuthandPermission(team); autherr != nil {
 
-		return TblUser{},autherr
+		return TblUser{}, autherr
 	}
 
 	tm.Userid = team.Userid
 	tm.Dataaccess = team.Dataaccess
 
-	err = tm.GetUserDetails(team.DB,inputs,&UserDetails)
+	err = tm.GetUserDetails(team.DB, inputs, &UserDetails)
 
 	if err != nil {
 
-		return TblUser{},err
+		return TblUser{}, err
 	}
 
-	return UserDetails,nil
+	return UserDetails, nil
 }
 
 // check username
-func (team *Teams) CheckUsername(username string, userid int,tenantid int) (bool, error) {
+func (team *Teams) CheckUsername(username string, userid int, tenantid int) (bool, error) {
 
 	var user TblUser
 
-	err := tm.CheckUsername(&user, username, userid, team.DB,tenantid)
+	err := tm.CheckUsername(&user, username, userid, team.DB, tenantid)
 
 	if err != nil {
 
@@ -347,7 +368,7 @@ func (team *Teams) CheckUsername(username string, userid int,tenantid int) (bool
 }
 
 // change user Access for multiple user
-func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int,tenantid int) error {
+func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int, tenantid int) error {
 
 	var user TblUser
 
@@ -355,7 +376,7 @@ func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int,tenant
 	user.ModifiedBy = modifiedby
 	user.DataAccess = status
 
-	err := tm.ChangeAccess(&user, userIds, team.DB,tenantid)
+	err := tm.ChangeAccess(&user, userIds, team.DB, tenantid)
 
 	if err != nil {
 
@@ -366,7 +387,7 @@ func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int,tenant
 }
 
 // change active status
-func (team *Teams) ChangeActiveStatus(userId int, activeStatus int, modifiedby int,tenantid int) (bool, error) {
+func (team *Teams) ChangeActiveStatus(userId int, activeStatus int, modifiedby int, tenantid int) (bool, error) {
 
 	var userStatus TblUser
 
@@ -374,7 +395,7 @@ func (team *Teams) ChangeActiveStatus(userId int, activeStatus int, modifiedby i
 	userStatus.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 	userStatus.IsActive = activeStatus
 
-	err := tm.ChangeActiveUser(&userStatus, userId, team.DB,tenantid)
+	err := tm.ChangeActiveUser(&userStatus, userId, team.DB, tenantid)
 
 	if err != nil {
 
@@ -386,7 +407,7 @@ func (team *Teams) ChangeActiveStatus(userId int, activeStatus int, modifiedby i
 }
 
 // change active Status for multiple users
-func (team *Teams) SelectedUserStatusChange(userIds []int, activeStatus int, modifiedby int,tenantid int) error {
+func (team *Teams) SelectedUserStatusChange(userIds []int, activeStatus int, modifiedby int, tenantid int) error {
 
 	var userActiveStatus TblUser
 
@@ -394,7 +415,7 @@ func (team *Teams) SelectedUserStatusChange(userIds []int, activeStatus int, mod
 	userActiveStatus.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 	userActiveStatus.IsActive = activeStatus
 
-	err := tm.SelectedUserStatusChange(&userActiveStatus, userIds, team.DB,tenantid)
+	err := tm.SelectedUserStatusChange(&userActiveStatus, userIds, team.DB, tenantid)
 
 	if err != nil {
 
@@ -412,12 +433,12 @@ func (team *Teams) DashboardUserCount(tenantid int) (totalcount int, lasttendays
 		return 0, 0, autherr
 	}
 
-	allusercount, err := tm.UserCount(team.DB,tenantid)
+	allusercount, err := tm.UserCount(team.DB, tenantid)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	lusercount, err := tm.NewuserCount(team.DB,tenantid)
+	lusercount, err := tm.NewuserCount(team.DB, tenantid)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -425,7 +446,7 @@ func (team *Teams) DashboardUserCount(tenantid int) (totalcount int, lasttendays
 	return int(allusercount), int(lusercount), nil
 }
 
-func (team *Teams) ChangeYourPassword(password string, userid int,tenantid int) (success bool, err error) {
+func (team *Teams) ChangeYourPassword(password string, userid int, tenantid int) (success bool, err error) {
 
 	if autherr := AuthandPermission(team); autherr != nil {
 		return false, autherr
@@ -438,7 +459,7 @@ func (team *Teams) ChangeYourPassword(password string, userid int,tenantid int) 
 	tbluser.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 	tbluser.ModifiedBy = 1
 
-	cerr := tm.ChangePasswordById(&tbluser, team.DB,tenantid)
+	cerr := tm.ChangePasswordById(&tbluser, team.DB, tenantid)
 	if cerr != nil {
 		return false, cerr
 	}
@@ -446,18 +467,18 @@ func (team *Teams) ChangeYourPassword(password string, userid int,tenantid int) 
 	return true, nil
 }
 
-func (team *Teams) GetAdminRoleUsers(roleid []int,tenantid int) (userlist []TblUser, err error) {
+func (team *Teams) GetAdminRoleUsers(roleid []int, tenantid int) (userlist []TblUser, err error) {
 
 	if autherr := AuthandPermission(team); autherr != nil {
 		return []TblUser{}, autherr
 	}
-	userslist, _ := tm.GetAdminRoleUsers(roleid, team.DB,tenantid)
+	userslist, _ := tm.GetAdminRoleUsers(roleid, team.DB, tenantid)
 
 	return userslist, nil
 
 }
 
-func (team *Teams) UpdateMyUser(userupdate TeamCreate, userid int,tenantid int) error {
+func (team *Teams) UpdateMyUser(userupdate TeamCreate, userid int, tenantid int) error {
 
 	if autherr := AuthandPermission(team); autherr != nil {
 		return autherr
@@ -487,7 +508,7 @@ func (team *Teams) UpdateMyUser(userupdate TeamCreate, userid int,tenantid int) 
 	user.ProfileImage = userupdate.ProfileImage
 	user.ProfileImagePath = userupdate.ProfileImagePath
 
-	err := tm.UpdateMyuser(&user, team.DB,tenantid)
+	err := tm.UpdateMyuser(&user, team.DB, tenantid)
 
 	if err != nil {
 		return err

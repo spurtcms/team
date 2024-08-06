@@ -89,6 +89,14 @@ type Team struct {
 	Role       bool
 }
 
+type TblMstrTenant struct {
+	Id        int       `gorm:"primaryKey;"`
+	TenantId  int      
+	DeletedOn time.Time `gorm:"DEFAULT:NULL"`
+	DeletedBy int       `gorm:"DEFAULT:NULL"`
+	IsDeleted int       `gorm:"DEFAULT:0"`
+}
+
 var tm TeamModel
 
 // get the list of users
@@ -498,4 +506,37 @@ func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) er
 	}
 
 	return nil
+}
+
+func (t TeamModel) GetUserByRole(RoleId int, DB *gorm.DB) (id int, err error) {
+
+	var UserId TblUser
+
+	if err := DB.Table("tbl_users").Where("role_id=?", RoleId).First(&UserId).Error; err != nil {
+
+		return 0, err
+	}
+
+	return UserId.Id, err
+}
+
+func (t TeamModel) CreateTenantid(user TblMstrTenant, DB *gorm.DB) (int, error) {
+
+	result := DB.Table("tbl_tenants").Create(&user)
+
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return user.Id, nil
+}
+
+func (t TeamModel) UpdateTenantId(UserId int, Tenantid int, DB *gorm.DB) error {
+
+    result := DB.Table("tbl_users").Where("id = ?", UserId).Update("tenant_id", Tenantid)
+
+    if result.Error != nil {
+        return result.Error
+    }
+
+    return nil
 }

@@ -114,7 +114,7 @@ func TestCreateTeam(t *testing.T) {
 
 	if permisison {
 
-		_, terr := team.CreateUser(TeamCreate{FirstName: "demo", RoleId: 1, Email: "demo@gmail.com"}) // TeamCreate we have multiple fields for creating user details
+		_,_, terr := team.CreateUser(TeamCreate{FirstName: "demo", RoleId: 1, Email: "demo@gmail.com"}) // TeamCreate we have multiple fields for creating user details
 
 		if terr != nil {
 
