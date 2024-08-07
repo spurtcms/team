@@ -1,9 +1,10 @@
 package team
 
 import (
-	"fmt"
 	"strings"
 	"time"
+
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/spurtcms/team/migration"
@@ -66,6 +67,7 @@ func (team *Teams) ListUser(limit, offset int, filter Filters, Tenantid int) (tb
 
 }
 
+// CreateUser create for your admin login.
 func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, UserId int, terr error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
@@ -106,7 +108,7 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, UserId
 		return TblUser{}, 0, err
 	}
 
-	Userid, err := tm.GetUserByRole(teamcreate.RoleId, team.DB)
+	Userid,err:=tm.GetUserByRole(teamcreate.RoleId,teamcreate.MobileNo,team.DB)
 
 	if err != nil {
 
@@ -117,7 +119,7 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, UserId
 }
 
 func (team *Teams) CreateTenantid(user TblMstrTenant) (int, error) {
-	id, err := tm.CreateTenantid(user, team.DB)
+	id, err := tm.CreateTenantid(&user, team.DB)
 	if err != nil {
 		return 0, err
 	}
@@ -312,7 +314,7 @@ func (team *Teams) CheckRoleUsed(roleid int, tenantid int) (bool, error) {
 }
 
 // get team by id
-func (team *Teams) GetUserById(Userid int, Userids []int, tenantid int) (tbluser TblUser, users []TblUser, err error) {
+func (team *Teams) GetUserById(Userid int, Userids []int) (tbluser TblUser, users []TblUser, err error) {
 
 	//check if auth or permission enabled
 	if autherr := AuthandPermission(team); autherr != nil {
@@ -320,7 +322,7 @@ func (team *Teams) GetUserById(Userid int, Userids []int, tenantid int) (tbluser
 		return TblUser{}, []TblUser{}, autherr
 	}
 
-	user, users, err := tm.GetUserById(Userid, Userids, team.DB, tenantid)
+	user, users, err := tm.GetUserById(Userid, Userids, team.DB)
 
 	if err != nil {
 
@@ -331,25 +333,8 @@ func (team *Teams) GetUserById(Userid int, Userids []int, tenantid int) (tbluser
 
 }
 
-func (team *Teams) UserDetails(inputs Team) (UserDetails TblUser, err error) {
+func (team *Teams) GetUserId(Roleid int, MobileNo int) {
 
-	//check if auth or permission enabled
-	if autherr := AuthandPermission(team); autherr != nil {
-
-		return TblUser{}, autherr
-	}
-
-	tm.Userid = team.Userid
-	tm.Dataaccess = team.Dataaccess
-
-	err = tm.GetUserDetails(team.DB, inputs, &UserDetails)
-
-	if err != nil {
-
-		return TblUser{}, err
-	}
-
-	return UserDetails, nil
 }
 
 // check username

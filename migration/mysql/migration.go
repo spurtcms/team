@@ -46,11 +46,20 @@ type TblUser struct {
 	TenantId          int       `gorm:"type:int"`
 }
 
+type TblMstrTenant struct {
+	Id        int       `gorm:"primaryKey;auto_increment"`
+	TenantId  int       `gorm:"type:int"`
+	DeletedOn time.Time `gorm:"type:datetime;DEFAULT:NULL"`
+	DeletedBy int       `gorm:"type:int;DEFAULT:NULL"`
+	IsDeleted int       `gorm:"type:int;DEFAULT:0"`
+}
+
 func MigrationTables(db *gorm.DB) {
 
 	err := db.AutoMigrate(
 		&TblRole{},
 		&TblUser{},
+		&TblMstrTenant{},
 	)
 
 	if err != nil {
