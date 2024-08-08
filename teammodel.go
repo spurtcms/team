@@ -60,6 +60,19 @@ type Filters struct {
 	FirstName string
 }
 
+type Team struct {
+	Id         int
+	Limit      int
+	Offset     int
+	Keyword    string
+	FirstName  string
+	TenantId   int
+	IsActive   bool
+	CreateOnly bool
+	Count      bool
+	Role       bool
+}
+
 type TeamCreate struct {
 	FirstName        string
 	LastName         string
@@ -333,6 +346,48 @@ func (t TeamModel) GetUserById(id int, ids []int, DB *gorm.DB) (user TblUser, us
 	}
 
 	return user, users, nil
+}
+
+func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) error {
+
+	query := DB.Debug().Model(TblUser{}).Where("is_deleted = 0")
+
+	if inputs.CreateOnly && team.Dataaccess == 1 {
+
+		query = query.Where("tbl_users.created_by = ?", team.Userid)
+	}
+
+	if inputs.Keyword != "" {
+
+		query = query.Where("(LOWER(TRIM(tbl_users.first_name)) LIKE LOWER(TRIM(?))", "%"+inputs.Keyword+"%").
+			Or("LOWER(TRIM(tbl_users.last_name)) LIKE LOWER(TRIM(?))", "%"+inputs.Keyword+"%").
+			Or("LOWER(TRIM(tbl_roles.name)) LIKE LOWER(TRIM(?))", "%"+inputs.Keyword+"%").
+			Or("LOWER(TRIM(tbl_users.username)) LIKE LOWER(TRIM(?)))", "%"+inputs.Keyword+"%")
+
+	}
+
+	if inputs.FirstName != "" {
+
+		query = query.Debug().Where("LOWER(TRIM(tbl_users.first_name)) LIKE LOWER(TRIM(?))"+" OR LOWER(TRIM(tbl_users.last_name)) LIKE LOWER(TRIM(?))", "%"+inputs.FirstName+"%", "%"+inputs.FirstName+"%")
+
+	}
+
+	if inputs.TenantId != -1 {
+
+		query = query.Where("tbl_users.tenant_id=? or tbl_users.tenant_id is Null", inputs.TenantId)
+	}
+
+	if inputs.Role {
+
+		query.Preload("Role", "is_deleted=?", 0)
+	}
+
+	if err := query.First(&user).Error; err != nil {
+
+		return err
+	}
+
+	return nil
 }
 
 // check username
