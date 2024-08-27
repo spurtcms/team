@@ -71,6 +71,7 @@ type Team struct {
 	CreateOnly bool
 	Count      bool
 	Role       bool
+	EmailId    string
 }
 
 type TeamCreate struct {
@@ -377,6 +378,11 @@ func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) er
 		query = query.Where("tbl_users.tenant_id=? or tbl_users.tenant_id is Null", inputs.TenantId)
 	}
 
+	if inputs.EmailId != "" {
+
+		query = query.Where("email = ? and is_deleted = 0", inputs.EmailId)
+
+	}
 	if inputs.Role {
 
 		query.Preload("Role", "is_deleted=?", 0)
