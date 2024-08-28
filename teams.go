@@ -1,6 +1,8 @@
 package team
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"strings"
 	"time"
 
@@ -108,7 +110,7 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, UserId
 		return TblUser{}, 0, err
 	}
 
-	Userid,err:=tm.GetUserByRole(teamcreate.RoleId,teamcreate.MobileNo,team.DB)
+	Userid, err := tm.GetUserByRole(teamcreate.RoleId, teamcreate.MobileNo, team.DB)
 
 	if err != nil {
 
@@ -128,6 +130,36 @@ func (team *Teams) CreateTenantid(user TblMstrTenant) (int, error) {
 
 func (team *Teams) UpdateTenantId(UserId int, Tenantid int) {
 	tm.UpdateTenantId(UserId, Tenantid, team.DB)
+}
+
+func (team *Teams) CreateTenantApiToken(tenantId int) (ApiToken string, err error) {
+	ApiToken, err = GenerateTenantApiToken(64)
+	if err != nil {
+		return "", err
+	}
+	currentTime, _ := time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	tokenDetails := TblGraphqlSettings{
+		TokenName:   "Default API Token",
+		Description: "Default API Token",
+		Duration:    "Unlimited",
+		CreatedBy:   team.Userid,
+		CreatedOn:   currentTime,
+		Token:       ApiToken,
+		IsDefault:   1,
+		TenantId:    tenantId}
+	err = tm.CreateTenantApiToken(team.DB, &tokenDetails)
+	if err != nil {
+		return "", err
+	}
+	return ApiToken, nil
+}
+
+func GenerateTenantApiToken(length int) (string, error) {
+	b := make([]byte, length)               // Create a slice to hold 32 bytes of random data
+	if _, err := rand.Read(b); err != nil { // Fill the slice with random data and handle any errors
+		return "", err // Return an empty string and the error if something went wrong
+	}
+	return base64.URLEncoding.EncodeToString(b), nil // Encode the random bytes to a URL-safe base64 string
 }
 
 // update user.

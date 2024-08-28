@@ -91,6 +91,24 @@ type TeamCreate struct {
 	TenantId         int
 }
 
+type TblGraphqlSettings struct {
+	Id          int
+	TokenName   string
+	Description string
+	Duration    string
+	CreatedBy   int
+	CreatedOn   time.Time
+	ModifiedBy  int       `gorm:"DEFAULT:NULL"`
+	ModifiedOn  time.Time `gorm:"DEFAULT:NULL"`
+	DeletedBy   int       `gorm:"DEFAULT:NULL"`
+	DeletedOn   time.Time `gorm:"DEFAULT:NULL"`
+	IsDeleted   int       `gorm:"DEFAULT:0"`
+	Token       string
+	IsDefault   int       `gorm:"DEFAULT:0"`
+	ExpiryTime  time.Time
+	TenantId    int
+}
+
 type TeamModel struct {
 	Dataaccess int
 	Userid     int
@@ -201,6 +219,12 @@ func (t TeamModel) UpdateTenantId(UserId int, Tenantid int, DB *gorm.DB) error {
     return nil
 }
 
+func (t TeamModel) CreateTenantApiToken(DB *gorm.DB,tokenDetails *TblGraphqlSettings) error {
+	if err := DB.Create(&tokenDetails).Error;err!=nil{
+		return err
+	}
+	return nil
+}
 
 // update user
 func (t TeamModel) UpdateUser(user *TblUser, DB *gorm.DB, tenantid int) (team TblUser, terr error) {
