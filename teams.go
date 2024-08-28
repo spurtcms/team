@@ -132,7 +132,7 @@ func (team *Teams) UpdateTenantId(UserId int, Tenantid int) {
 	tm.UpdateTenantId(UserId, Tenantid, team.DB)
 }
 
-func (team *Teams) CreateTenantApiToken(tenantId int) (ApiToken string, err error) {
+func (team *Teams) CreateTenantApiToken(UserId int,tenantId int) (ApiToken string, err error) {
 	ApiToken, err = GenerateTenantApiToken(64)
 	if err != nil {
 		return "", err
@@ -140,13 +140,16 @@ func (team *Teams) CreateTenantApiToken(tenantId int) (ApiToken string, err erro
 	currentTime, _ := time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 	tokenDetails := TblGraphqlSettings{
 		TokenName:   "Default API Token",
-		Description: "Default API Token",
+		Description: "Default token",
 		Duration:    "Unlimited",
-		CreatedBy:   team.Userid,
 		CreatedOn:   currentTime,
 		Token:       ApiToken,
 		IsDefault:   1,
 		TenantId:    tenantId}
+		switch {
+		case UserId!=0:
+			tokenDetails.CreatedBy = UserId
+		}
 	err = tm.CreateTenantApiToken(team.DB, &tokenDetails)
 	if err != nil {
 		return "", err

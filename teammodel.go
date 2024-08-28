@@ -96,7 +96,7 @@ type TblGraphqlSettings struct {
 	TokenName   string
 	Description string
 	Duration    string
-	CreatedBy   int
+	CreatedBy   int       `gorm:"DEFAULT:NULL"`
 	CreatedOn   time.Time
 	ModifiedBy  int       `gorm:"DEFAULT:NULL"`
 	ModifiedOn  time.Time `gorm:"DEFAULT:NULL"`
@@ -219,8 +219,8 @@ func (t TeamModel) UpdateTenantId(UserId int, Tenantid int, DB *gorm.DB) error {
     return nil
 }
 
-func (t TeamModel) CreateTenantApiToken(DB *gorm.DB,tokenDetails *TblGraphqlSettings) error {
-	if err := DB.Create(&tokenDetails).Error;err!=nil{
+func (t TeamModel) CreateTenantApiToken(DB *gorm.DB, tokenDetails *TblGraphqlSettings) error {
+	if err := DB.Debug().Create(&tokenDetails).Error; err != nil {
 		return err
 	}
 	return nil
