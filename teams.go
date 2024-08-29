@@ -139,7 +139,7 @@ func (team *Teams) CreateTenantApiToken(UserId int,tenantId int) (ApiToken strin
 	}
 	currentTime, _ := time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 	tokenDetails := TblGraphqlSettings{
-		TokenName:   "Default API Token",
+		TokenName:   "Default Token",
 		Description: "Default token",
 		Duration:    "Unlimited",
 		CreatedOn:   currentTime,
