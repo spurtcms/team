@@ -312,27 +312,44 @@ func (t TeamModel) CheckValidation(user *TblUser, email, username, mobile string
 func (t TeamModel) CheckEmail(user *TblUser, email string, userid int, DB *gorm.DB, tenantid int) error {
 
 	if userid == 0 {
-		if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and is_deleted = 0 and (tenant_id is NULL or tenant_id=?)", email, tenantid).First(&user).Error; err != nil {
+	if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and is_deleted = 0", email).First(&user).Error; err != nil {
 
-			return err
-		}
-	} else {
-		if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and id not in(?) and is_deleted= 0 and (tenant_id is NULL or tenant_id=?)", email, userid, tenantid).First(&user).Error; err != nil {
-
-			return err
-		}
+		return err
 	}
-	return nil
+} else {
+	if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and id not in(?) and is_deleted= 0", email, userid).First(&user).Error; err != nil {
+
+		return err
+	}
 }
 
+return nil
+
+
+// if userid == 0 {
+// 	if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and is_deleted = 0 and (tenant_id is NULL or tenant_id=?)", email, tenantid).First(&user).Error; err != nil {
+
+// 		return err
+// 	}
+// } else {
+// 	if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and id not in(?) and is_deleted= 0 and (tenant_id is NULL or tenant_id=?)", email, userid, tenantid).First(&user).Error; err != nil {
+
+// 		return err
+// 	}
+// }
+}
+
+
 func (t TeamModel) CheckNumber(user *TblUser, mobile string, userid int, DB *gorm.DB, tenantid int) error {
+	
+
 	if userid == 0 {
-		if err := DB.Table("tbl_users").Where("mobile_no = ? and is_deleted=0 and (tenant_id is NULL or tenant_id=?)", mobile, tenantid).First(&user).Error; err != nil {
+		if err := DB.Table("tbl_users").Where("mobile_no = ? and is_deleted=0", mobile).First(&user).Error; err != nil {
 
 			return err
 		}
 	} else {
-		if err := DB.Table("tbl_users").Where("mobile_no = ? and id not in (?) and is_deleted=0 and (tenant_id is NULL or tenant_id=?)", mobile, userid, tenantid).First(&user).Error; err != nil {
+		if err := DB.Table("tbl_users").Where("mobile_no = ? and id not in (?) and is_deleted=0", mobile, userid).First(&user).Error; err != nil {
 
 			return err
 		}
@@ -340,6 +357,19 @@ func (t TeamModel) CheckNumber(user *TblUser, mobile string, userid int, DB *gor
 	}
 
 	return nil
+
+	// if userid == 0 {
+	// 	if err := DB.Table("tbl_users").Where("mobile_no = ? and is_deleted=0 and (tenant_id is NULL or tenant_id=?)", mobile, tenantid).First(&user).Error; err != nil {
+
+	// 		return err
+	// 	}
+	// } else {
+	// 	if err := DB.Table("tbl_users").Where("mobile_no = ? and id not in (?) and is_deleted=0 and (tenant_id is NULL or tenant_id=?)", mobile, userid, tenantid).First(&user).Error; err != nil {
+
+	// 		return err
+	// 	}
+
+	// }
 }
 
 // Rolechekc
