@@ -41,6 +41,8 @@ type TblUser struct {
 	DefaultLanguageId    int       `gorm:"column:default_language_id"`
 	NameString           string    `gorm:"-"`
 	TenantId             int
+	Otp                  int       `gorm:"column:otp"`
+	OtpExpiry            time.Time `gorm:"column:otp_expiry"`
 }
 
 type TblMstrTenant struct {
