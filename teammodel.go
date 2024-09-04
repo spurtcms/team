@@ -98,7 +98,7 @@ type TblGraphqlSettings struct {
 	TokenName   string
 	Description string
 	Duration    string
-	CreatedBy   int       `gorm:"DEFAULT:NULL"`
+	CreatedBy   int `gorm:"DEFAULT:NULL"`
 	CreatedOn   time.Time
 	ModifiedBy  int       `gorm:"DEFAULT:NULL"`
 	ModifiedOn  time.Time `gorm:"DEFAULT:NULL"`
@@ -125,10 +125,10 @@ func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, cr
 
 	query := DB.Table("tbl_users")
 
-	if tenantid==0{
-		query=query.Select("tbl_users.id,tbl_users.uuid,tbl_users.role_id,tbl_users.first_name,tbl_users.last_name,tbl_users.email,tbl_users.password,tbl_users.username,tbl_users.mobile_no,tbl_users.profile_image,tbl_users.profile_image_path,tbl_users.created_on,tbl_users.created_by,tbl_users.modified_on,tbl_users.modified_by,tbl_users.is_active,tbl_users.is_deleted,tbl_users.deleted_on,tbl_users.deleted_by,tbl_users.data_access,tbl_roles.name as role_name,tbl_users.storage_type").Joins("inner join tbl_roles on tbl_users.role_id = tbl_roles.id").Where("tbl_users.is_deleted=? and tbl_users.created_by = ?", 0, t.Userid)
-	}else{
-		query=query.Select("tbl_users.id,tbl_users.uuid,tbl_users.role_id,tbl_users.first_name,tbl_users.last_name,tbl_users.email,tbl_users.password,tbl_users.username,tbl_users.mobile_no,tbl_users.profile_image,tbl_users.profile_image_path,tbl_users.created_on,tbl_users.created_by,tbl_users.modified_on,tbl_users.modified_by,tbl_users.is_active,tbl_users.is_deleted,tbl_users.deleted_on,tbl_users.deleted_by,tbl_users.data_access,tbl_roles.name as role_name,tbl_users.storage_type").Joins("inner join tbl_roles on tbl_users.role_id = tbl_roles.id").Where("tbl_users.is_deleted=? and (tbl_users.tenant_id is NULL or tbl_users.tenant_id=?)", 0, tenantid)
+	if tenantid == 0 {
+		query = query.Select("tbl_users.id,tbl_users.uuid,tbl_users.role_id,tbl_users.first_name,tbl_users.last_name,tbl_users.email,tbl_users.password,tbl_users.username,tbl_users.mobile_no,tbl_users.profile_image,tbl_users.profile_image_path,tbl_users.created_on,tbl_users.created_by,tbl_users.modified_on,tbl_users.modified_by,tbl_users.is_active,tbl_users.is_deleted,tbl_users.deleted_on,tbl_users.deleted_by,tbl_users.data_access,tbl_roles.name as role_name,tbl_users.storage_type").Joins("inner join tbl_roles on tbl_users.role_id = tbl_roles.id").Where("tbl_users.is_deleted=? and tbl_users.created_by = ?", 0, t.Userid)
+	} else {
+		query = query.Select("tbl_users.id,tbl_users.uuid,tbl_users.role_id,tbl_users.first_name,tbl_users.last_name,tbl_users.email,tbl_users.password,tbl_users.username,tbl_users.mobile_no,tbl_users.profile_image,tbl_users.profile_image_path,tbl_users.created_on,tbl_users.created_by,tbl_users.modified_on,tbl_users.modified_by,tbl_users.is_active,tbl_users.is_deleted,tbl_users.deleted_on,tbl_users.deleted_by,tbl_users.data_access,tbl_roles.name as role_name,tbl_users.storage_type").Joins("inner join tbl_roles on tbl_users.role_id = tbl_roles.id").Where("tbl_users.is_deleted=? and (tbl_users.tenant_id is NULL or tbl_users.tenant_id=?)", 0, tenantid)
 	}
 	if createonly && t.Dataaccess == 1 {
 
@@ -212,13 +212,13 @@ func (t TeamModel) CreateTenantid(user *TblMstrTenant, DB *gorm.DB) (int, error)
 
 func (t TeamModel) UpdateTenantId(UserId int, Tenantid int, DB *gorm.DB) error {
 
-    result := DB.Table("tbl_users").Where("id = ?", UserId).Update("tenant_id", Tenantid)
+	result := DB.Table("tbl_users").Where("id = ?", UserId).Update("tenant_id", Tenantid)
 
-    if result.Error != nil {
-        return result.Error
-    }
+	if result.Error != nil {
+		return result.Error
+	}
 
-    return nil
+	return nil
 }
 
 func (t TeamModel) CreateTenantApiToken(DB *gorm.DB, tokenDetails *TblGraphqlSettings) error {
@@ -230,9 +230,14 @@ func (t TeamModel) CreateTenantApiToken(DB *gorm.DB, tokenDetails *TblGraphqlSet
 
 // update user
 func (t TeamModel) UpdateUser(user *TblUser, DB *gorm.DB, tenantid int) (team TblUser, terr error) {
+	fmt.Println("user idfff", t.Userid)
+	query := DB.Table("tbl_users")
+	if tenantid == 0 {
+		query = query.Where("id=? and  created_by = ?", user.Id, t.Userid)
+	} else {
+		query = query.Where("id=? and (tenant_id is NULL or tenant_id=?)", user.Id, tenantid)
 
-	query := DB.Table("tbl_users").Where("id=? and (tenant_id is NULL or tenant_id=?)", user.Id, tenantid)
-
+	}
 	if user.ProfileImage == "" || user.Password == "" {
 
 		if user.Password == "" && user.ProfileImage == "" {
@@ -314,36 +319,33 @@ func (t TeamModel) CheckValidation(user *TblUser, email, username, mobile string
 func (t TeamModel) CheckEmail(user *TblUser, email string, userid int, DB *gorm.DB, tenantid int) error {
 
 	if userid == 0 {
-	if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and is_deleted = 0", email).First(&user).Error; err != nil {
+		if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and is_deleted = 0", email).First(&user).Error; err != nil {
 
-		return err
+			return err
+		}
+	} else {
+		if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and id not in(?) and is_deleted= 0", email, userid).First(&user).Error; err != nil {
+
+			return err
+		}
 	}
-} else {
-	if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and id not in(?) and is_deleted= 0", email, userid).First(&user).Error; err != nil {
 
-		return err
-	}
+	return nil
+
+	// if userid == 0 {
+	// 	if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and is_deleted = 0 and (tenant_id is NULL or tenant_id=?)", email, tenantid).First(&user).Error; err != nil {
+
+	// 		return err
+	// 	}
+	// } else {
+	// 	if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and id not in(?) and is_deleted= 0 and (tenant_id is NULL or tenant_id=?)", email, userid, tenantid).First(&user).Error; err != nil {
+
+	//			return err
+	//		}
+	//	}
 }
-
-return nil
-
-
-// if userid == 0 {
-// 	if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and is_deleted = 0 and (tenant_id is NULL or tenant_id=?)", email, tenantid).First(&user).Error; err != nil {
-
-// 		return err
-// 	}
-// } else {
-// 	if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and id not in(?) and is_deleted= 0 and (tenant_id is NULL or tenant_id=?)", email, userid, tenantid).First(&user).Error; err != nil {
-
-// 		return err
-// 	}
-// }
-}
-
 
 func (t TeamModel) CheckNumber(user *TblUser, mobile string, userid int, DB *gorm.DB, tenantid int) error {
-	
 
 	if userid == 0 {
 		if err := DB.Table("tbl_users").Where("mobile_no = ? and is_deleted=0", mobile).First(&user).Error; err != nil {
@@ -489,9 +491,16 @@ func (t TeamModel) ChangeAccess(user *TblUser, userIds []int, DB *gorm.DB, tenan
 
 func (t TeamModel) SelectedUserStatusChange(userStatus *TblUser, userIds []int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Debug().Table("tbl_users").Where("id in (?) and (tenant_id is NULL or tenant_id=?)", userIds, tenantid).UpdateColumns(map[string]interface{}{"is_active": userStatus.IsActive, "modified_by": userStatus.ModifiedBy, "modified_on": userStatus.ModifiedOn}).Error; err != nil {
+	if tenantid==0{
+		if err := DB.Debug().Table("tbl_users").Where("id in (?) ", userIds).UpdateColumns(map[string]interface{}{"is_active": userStatus.IsActive, "modified_by": userStatus.ModifiedBy, "modified_on": userStatus.ModifiedOn}).Error; err != nil {
 
-		return err
+			return err
+		}
+	}else{
+		if err := DB.Debug().Table("tbl_users").Where("id in (?) and (tenant_id is NULL or tenant_id=?)", userIds, tenantid).UpdateColumns(map[string]interface{}{"is_active": userStatus.IsActive, "modified_by": userStatus.ModifiedBy, "modified_on": userStatus.ModifiedOn}).Error; err != nil {
+
+			return err
+		}
 	}
 
 	return nil
@@ -502,21 +511,39 @@ func (t TeamModel) SelectedUserStatusChange(userStatus *TblUser, userIds []int, 
 
 func (t TeamModel) DeleteMultipleUser(user *TblUser, usersIds []int, userid int, DB *gorm.DB, tenantid int) error {
 
-	if userid != 0 {
-		if err := DB.Model(&TblUser{}).Where("id=? and (tenant_id is NULL or tenant_id=?)", userid, tenantid).Updates(TblUser{IsDeleted: user.IsDeleted, DeletedOn: user.DeletedOn, DeletedBy: user.DeletedBy}).Error; err != nil {
+	if tenantid == 0 {
+		if userid != 0 {
+			if err := DB.Model(&TblUser{}).Where("id=? ", userid).Updates(TblUser{IsDeleted: user.IsDeleted, DeletedOn: user.DeletedOn, DeletedBy: user.DeletedBy}).Error; err != nil {
 
-			return err
+				return err
 
+			}
+			return nil
+		} else {
+			if err := DB.Model(&TblUser{}).Where("id IN (?)", usersIds).Updates(map[string]interface{}{"is_deleted": user.IsDeleted, "deleted_on": user.DeletedOn, "deleted_by": user.DeletedBy}).Error; err != nil {
+
+				return err
+
+			}
 		}
-		return nil
+
 	} else {
-		if err := DB.Model(&TblUser{}).Where("id IN (?) and (tenant_id is NULL or tenant_id=?)", usersIds, tenantid).Updates(map[string]interface{}{"is_deleted": user.IsDeleted, "deleted_on": user.DeletedOn, "deleted_by": user.DeletedBy}).Error; err != nil {
+		if userid != 0 {
+			if err := DB.Model(&TblUser{}).Where("id=? and (tenant_id is NULL or tenant_id=?)", userid, tenantid).Updates(TblUser{IsDeleted: user.IsDeleted, DeletedOn: user.DeletedOn, DeletedBy: user.DeletedBy}).Error; err != nil {
 
-			return err
+				return err
 
+			}
+			return nil
+		} else {
+			if err := DB.Model(&TblUser{}).Where("id IN (?) and (tenant_id is NULL or tenant_id=?)", usersIds, tenantid).Updates(map[string]interface{}{"is_deleted": user.IsDeleted, "deleted_on": user.DeletedOn, "deleted_by": user.DeletedBy}).Error; err != nil {
+
+				return err
+
+			}
 		}
-	}
 
+	}
 	return nil
 }
 

@@ -132,7 +132,7 @@ func (team *Teams) UpdateTenantId(UserId int, Tenantid int) {
 	tm.UpdateTenantId(UserId, Tenantid, team.DB)
 }
 
-func (team *Teams) CreateTenantApiToken(UserId int,tenantId int) (ApiToken string, err error) {
+func (team *Teams) CreateTenantApiToken(UserId int, tenantId int) (ApiToken string, err error) {
 	ApiToken, err = GenerateTenantApiToken(64)
 	if err != nil {
 		return "", err
@@ -146,10 +146,10 @@ func (team *Teams) CreateTenantApiToken(UserId int,tenantId int) (ApiToken strin
 		Token:       ApiToken,
 		IsDefault:   1,
 		TenantId:    tenantId}
-		switch {
-		case UserId!=0:
-			tokenDetails.CreatedBy = UserId
-		}
+	switch {
+	case UserId != 0:
+		tokenDetails.CreatedBy = UserId
+	}
 	err = tm.CreateTenantApiToken(team.DB, &tokenDetails)
 	if err != nil {
 		return "", err
@@ -199,6 +199,8 @@ func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int, tenantid int) (
 	user.ProfileImagePath = teamcreate.ProfileImagePath
 	user.StorageType = teamcreate.StorageType
 
+	tm.Userid = team.Userid
+	tm.Dataaccess = team.Dataaccess
 	User, err := tm.UpdateUser(&user, team.DB, tenantid)
 
 	if err != nil {
