@@ -546,6 +546,7 @@ func (team *Teams) UpdateMyUser(userupdate TeamCreate, userid int, tenantid int)
 	user.DataAccess = userupdate.DataAccess
 	user.ProfileImage = userupdate.ProfileImage
 	user.ProfileImagePath = userupdate.ProfileImagePath
+	user.StorageType = userupdate.StorageType
 
 	err := tm.UpdateMyuser(&user, team.DB, tenantid)
 

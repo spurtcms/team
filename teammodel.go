@@ -598,21 +598,21 @@ func (t TeamModel) GetAdminRoleUsers(roleid []int, DB *gorm.DB, tenantid int) (u
 
 func (t TeamModel) UpdateMyuser(user *TblUser, DB *gorm.DB, tenantid int) error {
 
-	query := DB.Table("tbl_users").Where("id=? and (tenant_id is NULL or tenant_id=?)", user.Id, tenantid)
+	query := DB.Debug().Table("tbl_users").Where("id=? and (tenant_id is NULL or tenant_id=?)", user.Id, tenantid)
 
 	if user.ProfileImage == "" || user.Password == "" {
 
 		if user.Password == "" && user.ProfileImage == "" {
 
-			query = query.Omit("password", "profile_image", "profile_image_path").UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "data_access": user.DataAccess})
+			query = query.Omit("password", "profile_image", "profile_image_path").UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "data_access": user.DataAccess, "storage_type": user.StorageType})
 
 		} else if user.ProfileImage == "" {
 
-			query = query.Omit("profile_image", "profile_image_path").UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "data_access": user.DataAccess, "password": user.Password})
+			query = query.Omit("profile_image", "profile_image_path").UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "data_access": user.DataAccess, "password": user.Password, "storage_type": user.StorageType})
 
 		} else if user.Password == "" {
 
-			query = query.Omit("password").UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "profile_image": user.ProfileImage, "profile_image_path": user.ProfileImagePath, "data_access": user.DataAccess})
+			query = query.Omit("password").UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "profile_image": user.ProfileImage, "profile_image_path": user.ProfileImagePath, "data_access": user.DataAccess, "storage_type": user.StorageType})
 		}
 
 		if err := query.Error; err != nil {
@@ -622,7 +622,7 @@ func (t TeamModel) UpdateMyuser(user *TblUser, DB *gorm.DB, tenantid int) error 
 
 	} else {
 
-		if err := query.UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "profile_image": user.ProfileImage, "profile_image_path": user.ProfileImagePath, "data_access": user.DataAccess, "password": user.Password}).Error; err != nil {
+		if err := query.UpdateColumns(map[string]interface{}{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "username": user.Username, "mobile_no": user.MobileNo, "modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "profile_image": user.ProfileImage, "profile_image_path": user.ProfileImagePath, "data_access": user.DataAccess, "password": user.Password, "storage_type": user.StorageType}).Error; err != nil {
 
 			return err
 		}
@@ -631,3 +631,4 @@ func (t TeamModel) UpdateMyuser(user *TblUser, DB *gorm.DB, tenantid int) error 
 
 	return nil
 }
+
