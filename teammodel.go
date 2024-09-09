@@ -433,7 +433,17 @@ func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) er
 
 	if inputs.TenantId != -1 {
 
-		query = query.Where("tbl_users.tenant_id=? or tbl_users.tenant_id is Null", inputs.TenantId)
+		switch {
+
+		case inputs.TenantId==0:
+
+			query = query.Where("tbl_users.tenant_id=? or tbl_users.tenant_id is null", inputs.TenantId)
+
+		default:
+
+			query = query.Where("tbl_users.tenant_id=?", inputs.TenantId)
+
+		}
 	}
 
 	if inputs.EmailId != "" {
@@ -453,6 +463,7 @@ func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) er
 
 	return nil
 }
+
 
 // check username
 func (t TeamModel) CheckUsername(user *TblUser, username string, userid int, DB *gorm.DB, tenantid int) error {
