@@ -561,10 +561,19 @@ func (t TeamModel) DeleteMultipleUser(user *TblUser, usersIds []int, userid int,
 // change active status
 func (t TeamModel) ChangeActiveUser(user *TblUser, userId int, DB *gorm.DB, tenantid int) error {
 
-	result := DB.Debug().Model(&user).Where("id = ? and (tenant_id is NULL or tenant_id=?)", userId, tenantid).UpdateColumns(map[string]interface{}{"modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "is_active": user.IsActive})
-	if result.Error != nil {
-		return result.Error
+
+	if tenantid==0{
+		result := DB.Debug().Model(&user).Where("id = ? ", userId).UpdateColumns(map[string]interface{}{"modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "is_active": user.IsActive})
+		if result.Error != nil {
+			return result.Error
+		}
+	}else{
+		result := DB.Debug().Model(&user).Where("id = ? and (tenant_id is NULL or tenant_id=?)", userId, tenantid).UpdateColumns(map[string]interface{}{"modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "is_active": user.IsActive})
+		if result.Error != nil {
+			return result.Error
+		}
 	}
+
 
 	return nil
 }
