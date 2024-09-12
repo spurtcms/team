@@ -43,6 +43,8 @@ type TblUser struct {
 	TenantId             int
 	Otp                  int       `gorm:"column:otp"`
 	OtpExpiry            time.Time `gorm:"column:otp_expiry"`
+	NameLength           int       `gorm:"-:migration;<-:false"`
+	LimitedLengthName    string    `gorm:"-:migration;<-:false"`
 }
 
 type TblMstrTenant struct {
