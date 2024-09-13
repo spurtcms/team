@@ -45,14 +45,16 @@ type TblUser struct {
 	OtpExpiry            time.Time `gorm:"column:otp_expiry"`
 	NameLength           int       `gorm:"-:migration;<-:false"`
 	LimitedLengthName    string    `gorm:"-:migration;<-:false"`
+	S3FolderName         string    `gorm:"column:s3_folder_name"`
 }
 
 type TblMstrTenant struct {
-	Id        int       `gorm:"primaryKey;auto_increment;type:serial"`
-	TenantId  int       `gorm:"type:integer"`
-	DeletedOn time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
-	DeletedBy int       `gorm:"type:integer;DEFAULT:NULL"`
-	IsDeleted int       `gorm:"type:integer;DEFAULT:0"`
+	Id            int       `gorm:"primaryKey;auto_increment;type:serial"`
+	TenantId      int       `gorm:"type:integer"`
+	S3StoragePath string    `gorm:"type:character varying"`
+	DeletedOn     time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	DeletedBy     int       `gorm:"type:integer;DEFAULT:NULL"`
+	IsDeleted     int       `gorm:"type:integer;DEFAULT:0"`
 }
 
 type Filters struct {
@@ -93,6 +95,7 @@ type TeamCreate struct {
 	CreatedBy        int
 	StorageType      string
 	TenantId         int
+	S3FolderPath     string
 }
 
 type TblGraphqlSettings struct {
@@ -221,6 +224,41 @@ func (t TeamModel) UpdateTenantId(UserId int, Tenantid int, DB *gorm.DB) error {
 	}
 
 	return nil
+}
+
+func (t TeamModel) UpdateS3FolderName(tenantId, userId int, s3FolderPath string, DB *gorm.DB) error {
+
+	result := DB.Table("tbl_users").Where("id = ?", userId).Update("s3_folder_name", s3FolderPath)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	result = DB.Table("tbl_mstr_tenants").Where("id = ?", tenantId).Update("s3_storage_path", s3FolderPath)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (t TeamModel) UpdateImageDetails(userId int, imageName, imagePath string, DB *gorm.DB) error {
+
+	result := DB.Table("tbl_users").Where("id = ?", userId).UpdateColumns(map[string]interface{}{"profile_image": imageName, "profile_image_path": imagePath})
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (t TeamModel) GetTenantDetails(tenantId int, DB *gorm.DB) (tenantDetails TblMstrTenant, err error) {
+
+	result := DB.Table("tbl_mstr_tenants").Where("tenant_id = ? and is_deleted = 0", tenantId).Find(&tenantDetails)
+	if result.Error != nil {
+		return TblMstrTenant{}, result.Error
+	}
+
+	return tenantDetails, nil
 }
 
 func (t TeamModel) CreateTenantApiToken(DB *gorm.DB, tokenDetails *TblGraphqlSettings) error {
@@ -437,7 +475,7 @@ func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) er
 
 		switch {
 
-		case inputs.TenantId==0:
+		case inputs.TenantId == 0:
 
 			query = query.Where("tbl_users.tenant_id=? or tbl_users.tenant_id is null", inputs.TenantId)
 
@@ -465,7 +503,6 @@ func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) er
 
 	return nil
 }
-
 
 // check username
 func (t TeamModel) CheckUsername(user *TblUser, username string, userid int, DB *gorm.DB, tenantid int) error {
@@ -504,12 +541,12 @@ func (t TeamModel) ChangeAccess(user *TblUser, userIds []int, DB *gorm.DB, tenan
 
 func (t TeamModel) SelectedUserStatusChange(userStatus *TblUser, userIds []int, DB *gorm.DB, tenantid int) error {
 
-	if tenantid==0{
+	if tenantid == 0 {
 		if err := DB.Debug().Table("tbl_users").Where("id in (?) ", userIds).UpdateColumns(map[string]interface{}{"is_active": userStatus.IsActive, "modified_by": userStatus.ModifiedBy, "modified_on": userStatus.ModifiedOn}).Error; err != nil {
 
 			return err
 		}
-	}else{
+	} else {
 		if err := DB.Debug().Table("tbl_users").Where("id in (?) and (tenant_id is NULL or tenant_id=?)", userIds, tenantid).UpdateColumns(map[string]interface{}{"is_active": userStatus.IsActive, "modified_by": userStatus.ModifiedBy, "modified_on": userStatus.ModifiedOn}).Error; err != nil {
 
 			return err
@@ -563,19 +600,17 @@ func (t TeamModel) DeleteMultipleUser(user *TblUser, usersIds []int, userid int,
 // change active status
 func (t TeamModel) ChangeActiveUser(user *TblUser, userId int, DB *gorm.DB, tenantid int) error {
 
-
-	if tenantid==0{
+	if tenantid == 0 {
 		result := DB.Debug().Model(&user).Where("id = ? ", userId).UpdateColumns(map[string]interface{}{"modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "is_active": user.IsActive})
 		if result.Error != nil {
 			return result.Error
 		}
-	}else{
+	} else {
 		result := DB.Debug().Model(&user).Where("id = ? and (tenant_id is NULL or tenant_id=?)", userId, tenantid).UpdateColumns(map[string]interface{}{"modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "is_active": user.IsActive})
 		if result.Error != nil {
 			return result.Error
 		}
 	}
-
 
 	return nil
 }
@@ -653,4 +688,3 @@ func (t TeamModel) UpdateMyuser(user *TblUser, DB *gorm.DB, tenantid int) error 
 
 	return nil
 }
-

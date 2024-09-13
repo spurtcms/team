@@ -132,6 +132,35 @@ func (team *Teams) UpdateTenantId(UserId int, Tenantid int) {
 	tm.UpdateTenantId(UserId, Tenantid, team.DB)
 }
 
+func (team *Teams) UpdateS3FolderName(tenantId, userId int, s3FolderPath string) error {
+	err := tm.UpdateS3FolderName(tenantId, userId, s3FolderPath, team.DB)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (team *Teams) GetTenantDetails(tenantId int) (tenantDetails TblMstrTenant, err error) {
+
+	tenantDetails, err = tm.GetTenantDetails(tenantId, team.DB)
+	if err != nil {
+		return TblMstrTenant{}, err
+	}
+
+	return tenantDetails, nil
+}
+
+func (team *Teams) UpdateImageDetails(userId int, imageName, imagepath string) (err error) {
+
+	err = tm.UpdateImageDetails(userId, imageName, imagepath, team.DB)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (team *Teams) CreateTenantApiToken(UserId int, tenantId int) (ApiToken string, err error) {
 	ApiToken, err = GenerateTenantApiToken(64)
 	if err != nil {
