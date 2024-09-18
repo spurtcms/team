@@ -141,11 +141,11 @@ func (team *Teams) UpdateS3FolderName(tenantId, userId int, s3FolderPath string)
 	return nil
 }
 
-func (team *Teams) GetTenantDetails(tenantId int) (tenantDetails TblMstrTenant, err error) {
+func (team *Teams) GetTenantDetails(tenantId int) (tenantDetails TblUser, err error) {
 
 	tenantDetails, err = tm.GetTenantDetails(tenantId, team.DB)
 	if err != nil {
-		return TblMstrTenant{}, err
+		return TblUser{}, err
 	}
 
 	return tenantDetails, nil
