@@ -100,6 +100,7 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, UserId
 	user.CreatedBy = teamcreate.CreatedBy
 	user.StorageType = teamcreate.StorageType
 	user.TenantId = teamcreate.TenantId
+	user.S3FolderName = teamcreate.S3FolderPath
 
 	fmt.Println("user:", teamcreate.TenantId)
 

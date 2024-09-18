@@ -252,10 +252,18 @@ func (t TeamModel) UpdateImageDetails(userId int, imageName, imagePath string, D
 }
 
 func (t TeamModel) GetTenantDetails(tenantId int, DB *gorm.DB) (tenantDetails TblUser, err error) {
+	if tenantId == 0 {
+		result := DB.Debug().Table("tbl_users").Where("(tenant_id = ? or tenant_id is NULL) and is_deleted = 0 and is_active = 1", tenantId).First(&tenantDetails)
+		if result.Error != nil {
+			return TblUser{}, result.Error
+		}
 
-	result := DB.Debug().Table("tbl_users").Where("(tenant_id = ? or tenant_id = NULL) and is_deleted = 0 and is_active = 1", tenantId).First(&tenantDetails)
-	if result.Error != nil {
-		return TblUser{}, result.Error
+	} else {
+		result := DB.Debug().Table("tbl_users").Where("tenant_id = ? and is_deleted = 0 and is_active = 1", tenantId).First(&tenantDetails)
+		if result.Error != nil {
+			return TblUser{}, result.Error
+		}
+
 	}
 
 	return tenantDetails, nil
