@@ -696,3 +696,37 @@ func (t TeamModel) UpdateMyuser(user *TblUser, DB *gorm.DB, tenantid int) error 
 
 	return nil
 }
+
+// change active Status for multiple users
+
+func (t TeamModel) ChangeStatusForTenants(userStatus *TblUser, userIds []int, DB *gorm.DB) error {
+
+	if err := DB.Debug().Table("tbl_users").Where("id in (?)", userIds).UpdateColumns(map[string]interface{}{"is_active": userStatus.IsActive, "modified_by": userStatus.ModifiedBy, "modified_on": userStatus.ModifiedOn}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+
+}
+
+// delete only tenant users
+func (t TeamModel) DeleteTenantusers(user *TblUser, usersIds []int, userid int, DB *gorm.DB) error {
+
+	if userid != 0 {
+		if err := DB.Model(&TblUser{}).Where("id=? ", userid).Updates(TblUser{IsDeleted: user.IsDeleted, DeletedOn: user.DeletedOn, DeletedBy: user.DeletedBy}).Error; err != nil {
+
+			return err
+
+		}
+		return nil
+	} else {
+		if err := DB.Model(&TblUser{}).Where("id IN (?) ", usersIds).Updates(map[string]interface{}{"is_deleted": user.IsDeleted, "deleted_on": user.DeletedOn, "deleted_by": user.DeletedBy}).Error; err != nil {
+
+			return err
+
+		}
+	}
+
+	return nil
+}

@@ -586,3 +586,47 @@ func (team *Teams) UpdateMyUser(userupdate TeamCreate, userid int, tenantid int)
 
 	return nil
 }
+
+// change active Status for multiple users
+func (team *Teams) ChangeStatusForTenants(userIds []int, activeStatus int, modifiedby int) error {
+
+	var userActiveStatus TblUser
+
+	userActiveStatus.ModifiedBy = modifiedby
+	userActiveStatus.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	userActiveStatus.IsActive = activeStatus
+
+	err := tm.ChangeStatusForTenants(&userActiveStatus, userIds, team.DB)
+
+	if err != nil {
+
+		return err
+	}
+
+	return nil
+
+}
+
+// delete only tenant users
+func (team *Teams) DeleteTenantusers(usersIds []int, userid int, deletedby int) error {
+
+	if AuthError := AuthandPermission(team); AuthError != nil {
+
+		return AuthError
+	}
+
+	var user TblUser
+
+	user.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	user.DeletedBy = deletedby
+	user.IsDeleted = 1
+
+	err := tm.DeleteTenantusers(&user, usersIds, userid, team.DB)
+
+	if err != nil {
+
+		return err
+	}
+
+	return nil
+}
