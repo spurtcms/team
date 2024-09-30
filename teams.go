@@ -1,8 +1,6 @@
 package team
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"strings"
 	"time"
 
@@ -95,7 +93,7 @@ func (team *Teams) CreateUser(teamcreate TeamCreate) (createuser TblUser, UserId
 	user.DataAccess = teamcreate.DataAccess
 	user.ProfileImage = teamcreate.ProfileImage
 	user.ProfileImagePath = teamcreate.ProfileImagePath
-	user.DefaultLanguageId = 1
+	user.DefaultLanguageId = teamcreate.DefaultLanguageId
 	user.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 	user.CreatedBy = teamcreate.CreatedBy
 	user.StorageType = teamcreate.StorageType
@@ -160,39 +158,6 @@ func (team *Teams) UpdateImageDetails(userId int, imageName, imagepath string) (
 	}
 
 	return nil
-}
-
-func (team *Teams) CreateTenantApiToken(UserId int, tenantId int) (ApiToken string, err error) {
-	ApiToken, err = GenerateTenantApiToken(64)
-	if err != nil {
-		return "", err
-	}
-	currentTime, _ := time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-	tokenDetails := TblGraphqlSettings{
-		TokenName:   "Default Token",
-		Description: "Default token",
-		Duration:    "Unlimited",
-		CreatedOn:   currentTime,
-		Token:       ApiToken,
-		IsDefault:   1,
-		TenantId:    tenantId}
-	switch {
-	case UserId != 0:
-		tokenDetails.CreatedBy = UserId
-	}
-	err = tm.CreateTenantApiToken(team.DB, &tokenDetails)
-	if err != nil {
-		return "", err
-	}
-	return ApiToken, nil
-}
-
-func GenerateTenantApiToken(length int) (string, error) {
-	b := make([]byte, length)               // Create a slice to hold 32 bytes of random data
-	if _, err := rand.Read(b); err != nil { // Fill the slice with random data and handle any errors
-		return "", err // Return an empty string and the error if something went wrong
-	}
-	return base64.URLEncoding.EncodeToString(b), nil // Encode the random bytes to a URL-safe base64 string
 }
 
 // update user.
@@ -349,7 +314,7 @@ func (team *Teams) LastLoginActivity(userid int, tenantid int) (err error) {
 		return AuthError
 	}
 
-	Lerr := tm.Lastlogin(userid, time.Now(), team.DB, tenantid)
+	Lerr := tm.Lastlogin(userid, time.Now().UTC(), team.DB, tenantid)
 
 	if Lerr != nil {
 

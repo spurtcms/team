@@ -81,39 +81,22 @@ type Team struct {
 }
 
 type TeamCreate struct {
-	FirstName        string
-	LastName         string
-	RoleId           int
-	Email            string
-	Username         string
-	Password         string
-	IsActive         int
-	DataAccess       int
-	MobileNo         string
-	ProfileImage     string
-	ProfileImagePath string
-	CreatedBy        int
-	StorageType      string
-	TenantId         int
-	S3FolderPath     string
-}
-
-type TblGraphqlSettings struct {
-	Id          int
-	TokenName   string
-	Description string
-	Duration    string
-	CreatedBy   int `gorm:"DEFAULT:NULL"`
-	CreatedOn   time.Time
-	ModifiedBy  int       `gorm:"DEFAULT:NULL"`
-	ModifiedOn  time.Time `gorm:"DEFAULT:NULL"`
-	DeletedBy   int       `gorm:"DEFAULT:NULL"`
-	DeletedOn   time.Time `gorm:"DEFAULT:NULL"`
-	IsDeleted   int       `gorm:"DEFAULT:0"`
-	Token       string
-	IsDefault   int       `gorm:"DEFAULT:0"`
-	ExpiryTime  time.Time `gorm:"DEFAULT:NULL"`
-	TenantId    int
+	FirstName         string
+	LastName          string
+	RoleId            int
+	Email             string
+	Username          string
+	Password          string
+	IsActive          int
+	DataAccess        int
+	MobileNo          string
+	ProfileImage      string
+	ProfileImagePath  string
+	CreatedBy         int
+	StorageType       string
+	TenantId          int
+	S3FolderPath      string
+	DefaultLanguageId int
 }
 
 type TeamModel struct {
@@ -267,13 +250,6 @@ func (t TeamModel) GetTenantDetails(tenantId int, DB *gorm.DB) (tenantDetails Tb
 	}
 
 	return tenantDetails, nil
-}
-
-func (t TeamModel) CreateTenantApiToken(DB *gorm.DB, tokenDetails *TblGraphqlSettings) error {
-	if err := DB.Debug().Create(&tokenDetails).Error; err != nil {
-		return err
-	}
-	return nil
 }
 
 // update user
@@ -456,24 +432,14 @@ func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) er
 
 	if inputs.TenantId != -1 {
 
-		switch {
-
-		case inputs.TenantId == 0:
-
-			query = query.Where("tbl_users.tenant_id=?", inputs.TenantId)
-
-		default:
-
-			query = query.Where("tbl_users.tenant_id=?", inputs.TenantId)
-
-		}
+		query = query.Where("tbl_users.tenant_id=?", inputs.TenantId)
 	}
 
 	if inputs.EmailId != "" {
 
 		query = query.Where("email = ? and is_deleted = 0", inputs.EmailId)
-
 	}
+
 	if inputs.Role {
 
 		query.Preload("Role", "is_deleted=?", 0)
