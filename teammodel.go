@@ -178,6 +178,8 @@ func (t TeamModel) CreateUser(user *TblUser, DB *gorm.DB) (team TblUser, terr er
 	return *user, nil
 }
 
+
+// function to get user id by role id,mobile number  from db
 func (t TeamModel) GetUserByRole(RoleId int, MobileNo string, DB *gorm.DB) (id int, err error) {
 
 	var UserId TblUser

@@ -501,6 +501,7 @@ func (team *Teams) ChangeYourPassword(password string, userid int, tenantid int)
 	return true, nil
 }
 
+// function to get the admin roles users list
 func (team *Teams) GetAdminRoleUsers(roleid []int, tenantid int) (userlist []TblUser, err error) {
 
 	if autherr := AuthandPermission(team); autherr != nil {
