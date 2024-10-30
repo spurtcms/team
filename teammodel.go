@@ -42,7 +42,7 @@ type TblUser struct {
 	NameString           string    `gorm:"-"`
 	TenantId             int
 	Otp                  int       `gorm:"column:otp"`
-	OtpExpiry            time.Time `gorm:"column:otp_expiry"`
+	OtpExpiry            time.Time `gorm:"column:otp_expiry;DEFAULT:NULL"`
 	NameLength           int       `gorm:"-:migration;<-:false"`
 	LimitedLengthName    string    `gorm:"-:migration;<-:false"`
 	S3FolderName         string    `gorm:"column:s3_folder_name"`
