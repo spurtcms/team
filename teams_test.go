@@ -15,10 +15,10 @@ func DBSetup() (*gorm.DB, error) {
 
 	dbConfig := map[string]string{
 		"username": "postgres",
-		"password": "root",
+		"password": "postgres",
 		"host":     "localhost",
 		"port":     "5432",
-		"dbname":   "spurt-cms-apr3",
+		"dbname":   "Spurtcms_V2",
 	}
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
@@ -44,13 +44,13 @@ func TestTeamList(t *testing.T) {
 	db, _ := DBSetup()
 
 	config := auth.Config{
-		UserId:     1,
-		ExpiryTime: 2,
-		ExpiryFlg:  true,
-		SecretKey:  "Secret123",
-		DB:         db,
-		RoleId:     1,
-		RoleName:   "",
+		UserId: 1,
+		// ExpiryTime: 2,
+		ExpiryFlg: false,
+		SecretKey: "Secret123",
+		DB:        db,
+		RoleId:    2,
+		RoleName:  "",
 	}
 
 	Auth := auth.AuthSetup(config)
@@ -59,7 +59,7 @@ func TestTeamList(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Team", auth.CRUD,TenantId)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, 1)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -71,7 +71,7 @@ func TestTeamList(t *testing.T) {
 	//list users
 	if permisison {
 
-		teamuser, count, _ := team.ListUser(10, 0, Filters{},1)
+		teamuser, count, _ := team.ListUser(10, 0, Filters{}, 1)
 
 		fmt.Println(teamuser, count)
 
@@ -89,12 +89,12 @@ func TestCreateTeam(t *testing.T) {
 	db, _ := DBSetup()
 
 	config := auth.Config{
-		UserId:     1,
-		ExpiryTime: 2,
-		ExpiryFlg:  true,
-		SecretKey:  "Secret123",
-		DB:         db,
-		RoleId:     1,
+		UserId: 1,
+		// ExpiryTime: 2,
+		ExpiryFlg: false,
+		SecretKey: "Secret123",
+		DB:        db,
+		RoleId:    2,
 	}
 
 	Auth := auth.AuthSetup(config)
@@ -103,7 +103,7 @@ func TestCreateTeam(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Team", auth.CRUD,TenantId)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, 1)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -114,7 +114,7 @@ func TestCreateTeam(t *testing.T) {
 
 	if permisison {
 
-		_,_, terr := team.CreateUser(TeamCreate{FirstName: "demo", RoleId: 1, Email: "demo@gmail.com"}) // TeamCreate we have multiple fields for creating user details
+		_, _, terr := team.CreateUser(TeamCreate{FirstName: "hello", RoleId: 2, Email: "demo@gmail.com", TenantId: 1}) // TeamCreate we have multiple fields for creating user details
 
 		if terr != nil {
 
@@ -134,13 +134,13 @@ func TestUpdateTeam(t *testing.T) {
 	db, _ := DBSetup()
 
 	config := auth.Config{
-		UserId:     1,
-		ExpiryTime: 2,
-		ExpiryFlg:  true,
-		SecretKey:  "Secret123",
-		DB:         db,
-		RoleId:     1,
-		RoleName:   "",
+		UserId: 1,
+		// ExpiryTime: 2,
+		ExpiryFlg: false,
+		SecretKey: "Secret123",
+		DB:        db,
+		RoleId:    2,
+		RoleName:  "",
 	}
 
 	Auth := auth.AuthSetup(config)
@@ -149,7 +149,7 @@ func TestUpdateTeam(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Team", auth.CRUD,TenantId)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, TenantId)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -159,7 +159,7 @@ func TestUpdateTeam(t *testing.T) {
 	})
 	if permisison {
 
-		team.UpdateUser(TeamCreate{FirstName: "admin", RoleId: 1, Email: "demo@gmail.com"}, 2,1)
+		team.UpdateUser(TeamCreate{FirstName: "admin", RoleId: 1, Email: "demo@gmail.com"}, 1, 1)
 
 	} else {
 
@@ -174,13 +174,13 @@ func TestDeleteteam(t *testing.T) {
 	db, _ := DBSetup()
 
 	config := auth.Config{
-		UserId:     1,
-		ExpiryTime: 2,
-		ExpiryFlg:  true,
-		SecretKey:  "Secret123",
-		DB:         db,
-		RoleId:     2,
-		RoleName:   "",
+		UserId: 1,
+		// ExpiryTime: 2,
+		ExpiryFlg: false,
+		SecretKey: "Secret123",
+		DB:        db,
+		RoleId:    2,
+		RoleName:  "",
 	}
 
 	Auth := auth.AuthSetup(config)
@@ -189,7 +189,7 @@ func TestDeleteteam(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Team", auth.CRUD,TenantId)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, 1)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -199,7 +199,7 @@ func TestDeleteteam(t *testing.T) {
 	})
 	if permisison {
 
-		team.DeleteUser([]int{}, 2, 1,1)
+		team.DeleteUser([]int{}, 5, 2, 1)
 
 	} else {
 
@@ -229,7 +229,7 @@ func TestCheckemail(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Team", auth.CRUD,TenantId)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, TenantId)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -239,7 +239,7 @@ func TestCheckemail(t *testing.T) {
 	})
 	if permisison {
 
-		_, chk, _ := team.CheckEmail("demo2@gmail.com", 2,1)
+		_, chk, _ := team.CheckEmail("demo2@gmail.com", 2, 1)
 
 		log.Println("chk", chk)
 
@@ -271,7 +271,7 @@ func TestCheckNumber(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Team", auth.CRUD,TenantId)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, TenantId)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -281,7 +281,7 @@ func TestCheckNumber(t *testing.T) {
 	})
 	if permisison {
 
-		chk, _ := team.CheckNumber("9900887500", 2,1)
+		chk, _ := team.CheckNumber("9900887500", 2, 1)
 
 		log.Println("chk", chk)
 
@@ -312,7 +312,7 @@ func TestCheckUserValidation(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Team", auth.CRUD,TenantId)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, TenantId)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -322,7 +322,7 @@ func TestCheckUserValidation(t *testing.T) {
 	})
 	if permisison {
 
-		email, user, mobile, _ := team.CheckUserValidation("9900887501", "demo@gmail.com", "demo", 2,1)
+		email, user, mobile, _ := team.CheckUserValidation("9900887501", "demo@gmail.com", "demo", 2, 1)
 
 		log.Println("chk", email, user, mobile)
 
@@ -353,7 +353,7 @@ func TestCheckPasswordwithOld(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Team", auth.CRUD,TenantId)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, TenantId)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -363,7 +363,7 @@ func TestCheckPasswordwithOld(t *testing.T) {
 	})
 	if permisison {
 
-		chk, _ := team.CheckPasswordwithOld(2, "Admin@123",1)
+		chk, _ := team.CheckPasswordwithOld(2, "Admin@123", 1)
 
 		log.Println("chk", chk)
 
@@ -395,7 +395,7 @@ func TestLastLoginActivity(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Team", auth.CRUD,TenantId)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, TenantId)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -405,7 +405,7 @@ func TestLastLoginActivity(t *testing.T) {
 	})
 	if permisison {
 
-		chk := team.LastLoginActivity(2,1)
+		chk := team.LastLoginActivity(2, 1)
 
 		log.Println("chk", chk)
 
@@ -436,7 +436,7 @@ func TestCheckRoleUsed(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Team", auth.CRUD,TenantId)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, TenantId)
 
 	team := TeamSetup(Config{
 		DB:               db,
@@ -446,7 +446,7 @@ func TestCheckRoleUsed(t *testing.T) {
 	})
 	if permisison {
 
-		chk, _ := team.CheckRoleUsed(3,1)
+		chk, _ := team.CheckRoleUsed(3, 1)
 
 		log.Println("chk", chk)
 

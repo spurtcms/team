@@ -36,7 +36,7 @@ func main(){
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Categories Group", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Team", auth.CRUD, 1)
 
 	//Teamsetup automatically migrate team related tables in your database.
 	team := teams.TeamSetup(teams.Config{
@@ -48,22 +48,22 @@ func main(){
 	
 	if permisison {
 
-		teamuser, count, err := team.ListUser(10, 0, teams.Filters{})
+		teamuser, count, err := team.ListUser(10, 0, teams.Filters{},1)
 		//handle error
 		fmt.Println(teamuser,count,err)
 		
 		//create user- TeamCreate struct we have multiple fields for creating user
-		user,cerr:=team.CreateUser(teams.TeamCreate{FirstName: "demo", RoleId: 1, Email: "mailto:demo@gmail.com"})
+		user,cerr:=team.CreateUser(teams.TeamCreate{FirstName: "demo", RoleId: 1, Email: "mailto:demo@gmail.com",TenantId: 1})
 		//handle error
 		fmt.Println(user,cerr)
 
 		//update user- TeamCreate struct we have multiple fields for update user
-		user1,uerr:=team.UpdateUser(teams.TeamCreate{FirstName: "demo1", RoleId: 2, Email: "mailto:demo1@gmail.com"}, 1)
+		user1,uerr:=team.UpdateUser(teams.TeamCreate{FirstName: "demo1", RoleId: 2, Email: "mailto:demo1@gmail.com"}, 1,1)
 		//handle error
 		fmt.Println(user1,uerr)
 
 		//delete user
-		err1:=team.DeleteUser([]int{},1,1)
+		err1:=team.DeleteUser([]int{},1,1,1)
 		//handle error
 		fmt.Println(err1)
 
