@@ -40,7 +40,7 @@ type TblUser struct {
 	RoleName             string    `gorm:"-:migration;<-:false"`
 	DefaultLanguageId    int       `gorm:"column:default_language_id"`
 	NameString           string    `gorm:"-"`
-	TenantId             int
+	TenantId             string
 	Otp                  int       `gorm:"column:otp"`
 	OtpExpiry            time.Time `gorm:"column:otp_expiry;DEFAULT:NULL"`
 	NameLength           int       `gorm:"-:migration;<-:false"`
@@ -50,7 +50,7 @@ type TblUser struct {
 
 type TblMstrTenant struct {
 	Id            int       `gorm:"primaryKey;auto_increment;type:serial"`
-	TenantId      int       `gorm:"type:integer"`
+	TenantId      string    `gorm:"type:character varying"`
 	S3StoragePath string    `gorm:"type:character varying"`
 	DeletedOn     time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 	DeletedBy     int       `gorm:"type:integer;DEFAULT:NULL"`
@@ -72,7 +72,7 @@ type Team struct {
 	Offset     int
 	Keyword    string
 	FirstName  string
-	TenantId   int
+	TenantId   string
 	IsActive   bool
 	CreateOnly bool
 	Count      bool
@@ -94,7 +94,7 @@ type TeamCreate struct {
 	ProfileImagePath  string
 	CreatedBy         int
 	StorageType       string
-	TenantId          int
+	TenantId          string
 	S3FolderPath      string
 	DefaultLanguageId int
 }
@@ -107,13 +107,13 @@ type TeamModel struct {
 var tm TeamModel
 
 // get the list of users
-func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, createonly bool, DB *gorm.DB, tenantid int) (users []TblUser, count int64, err error) {
+func (t TeamModel) GetUsersList(offset, limit int, filter Filters, flag bool, createonly bool, DB *gorm.DB, tenantid string) (users []TblUser, count int64, err error) {
 
 	var Total_users int64
 
 	query := DB.Table("tbl_users").Select("tbl_users.id,tbl_users.uuid,tbl_users.role_id,tbl_users.first_name,tbl_users.last_name,tbl_users.email,tbl_users.password,tbl_users.username,tbl_users.mobile_no,tbl_users.profile_image,tbl_users.profile_image_path,tbl_users.created_on,tbl_users.created_by,tbl_users.modified_on,tbl_users.modified_by,tbl_users.is_active,tbl_users.is_deleted,tbl_users.deleted_on,tbl_users.deleted_by,tbl_users.data_access,tbl_roles.name as role_name,tbl_users.storage_type").Joins("inner join tbl_roles on tbl_users.role_id = tbl_roles.id")
 
-	if tenantid == 0 {
+	if tenantid == "" {
 		query = query.Where("tbl_users.is_deleted=? and tbl_users.created_by = ?", 0, t.Userid)
 	} else {
 		query = query.Where("tbl_users.is_deleted=? and tbl_users.tenant_id=?", 0, tenantid)
@@ -178,7 +178,6 @@ func (t TeamModel) CreateUser(user *TblUser, DB *gorm.DB) (team TblUser, terr er
 	return *user, nil
 }
 
-
 // function to get user id by role id,mobile number  from db
 func (t TeamModel) GetUserByRole(RoleId int, MobileNo string, DB *gorm.DB) (id int, err error) {
 
@@ -200,7 +199,7 @@ func (t TeamModel) CreateTenantid(user *TblMstrTenant, DB *gorm.DB) (int, error)
 	return user.Id, nil
 }
 
-func (t TeamModel) UpdateTenantId(UserId int, Tenantid int, DB *gorm.DB) error {
+func (t TeamModel) UpdateTenantId(UserId int, Tenantid string, DB *gorm.DB) error {
 
 	result := DB.Table("tbl_users").Where("id = ?", UserId).Update("tenant_id", Tenantid)
 
@@ -236,8 +235,8 @@ func (t TeamModel) UpdateImageDetails(userId int, imageName, imagePath string, D
 	return nil
 }
 
-func (t TeamModel) GetTenantDetails(tenantId int, DB *gorm.DB) (tenantDetails TblUser, err error) {
-	if tenantId == 0 {
+func (t TeamModel) GetTenantDetails(tenantId string, DB *gorm.DB) (tenantDetails TblUser, err error) {
+	if tenantId == "" {
 		result := DB.Debug().Table("tbl_users").Where("tenant_id = ?  and is_deleted = 0 and is_active = 1", tenantId).First(&tenantDetails)
 		if result.Error != nil {
 			return TblUser{}, result.Error
@@ -255,10 +254,10 @@ func (t TeamModel) GetTenantDetails(tenantId int, DB *gorm.DB) (tenantDetails Tb
 }
 
 // update user
-func (t TeamModel) UpdateUser(user *TblUser, DB *gorm.DB, tenantid int) (team TblUser, terr error) {
+func (t TeamModel) UpdateUser(user *TblUser, DB *gorm.DB, tenantid string) (team TblUser, terr error) {
 	fmt.Println("user idfff", t.Userid)
 	query := DB.Table("tbl_users")
-	if tenantid == 0 {
+	if tenantid == "" {
 		query = query.Where("id=? and  created_by = ?", user.Id, t.Userid)
 	} else {
 		query = query.Where("id=? and tenant_id=?", user.Id, tenantid)
@@ -295,7 +294,7 @@ func (t TeamModel) UpdateUser(user *TblUser, DB *gorm.DB, tenantid int) (team Tb
 }
 
 // delete team user
-func (t TeamModel) DeleteUser(user *TblUser, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) DeleteUser(user *TblUser, DB *gorm.DB, tenantid string) error {
 
 	if err := DB.Model(&TblUser{}).Where("id=? and tenant_id=?", user.Id, tenantid).Updates(TblUser{IsDeleted: user.IsDeleted, DeletedOn: user.DeletedOn, DeletedBy: user.DeletedBy}).Error; err != nil {
 
@@ -306,7 +305,7 @@ func (t TeamModel) DeleteUser(user *TblUser, DB *gorm.DB, tenantid int) error {
 }
 
 // user last login update
-func (t TeamModel) Lastlogin(id int, log_time time.Time, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) Lastlogin(id int, log_time time.Time, DB *gorm.DB, tenantid string) error {
 
 	if err := DB.Table("tbl_users").Where("id=? and tenant_id=?", id, tenantid).Update("last_login", log_time).Error; err != nil {
 
@@ -316,7 +315,7 @@ func (t TeamModel) Lastlogin(id int, log_time time.Time, DB *gorm.DB, tenantid i
 
 }
 
-func (t TeamModel) GetUserDetailsTeam(user *TblUser, id int, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) GetUserDetailsTeam(user *TblUser, id int, DB *gorm.DB, tenantid string) error {
 
 	if err := DB.Where("id=? and tenant_id=?", id, tenantid).First(&user).Error; err != nil {
 
@@ -325,7 +324,7 @@ func (t TeamModel) GetUserDetailsTeam(user *TblUser, id int, DB *gorm.DB, tenant
 	return nil
 }
 
-func (t TeamModel) CheckValidation(user *TblUser, email, username, mobile string, userid int, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) CheckValidation(user *TblUser, email, username, mobile string, userid int, DB *gorm.DB, tenantid string) error {
 	if userid == 0 {
 		if err := DB.Table("tbl_users").Where("mobile_no = ? or LOWER(TRIM(email))=LOWER(TRIM(?)) or username = ?   and is_deleted=0 and tenant_id=?", mobile, email, username, tenantid).First(&user).Error; err != nil {
 
@@ -342,7 +341,7 @@ func (t TeamModel) CheckValidation(user *TblUser, email, username, mobile string
 	return nil
 }
 
-func (t TeamModel) CheckEmail(user *TblUser, email string, userid int, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) CheckEmail(user *TblUser, email string, userid int, DB *gorm.DB, tenantid string) error {
 
 	if userid == 0 {
 		if err := DB.Table("tbl_users").Where("LOWER(TRIM(email))=LOWER(TRIM(?)) and is_deleted = 0", email).First(&user).Error; err != nil {
@@ -359,7 +358,7 @@ func (t TeamModel) CheckEmail(user *TblUser, email string, userid int, DB *gorm.
 	return nil
 }
 
-func (t TeamModel) CheckNumber(user *TblUser, mobile string, userid int, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) CheckNumber(user *TblUser, mobile string, userid int, DB *gorm.DB, tenantid string) error {
 
 	if userid == 0 {
 		if err := DB.Table("tbl_users").Where("mobile_no = ? and is_deleted=0", mobile).First(&user).Error; err != nil {
@@ -378,7 +377,7 @@ func (t TeamModel) CheckNumber(user *TblUser, mobile string, userid int, DB *gor
 }
 
 // Rolechekc
-func (t TeamModel) CheckRoleUsed(user *TblUser, roleid int, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) CheckRoleUsed(user *TblUser, roleid int, DB *gorm.DB, tenantid string) error {
 
 	if err := DB.Table("tbl_users").Where("role_id=? and is_deleted =0 and tenant_id=?", roleid, tenantid).First(user).Error; err != nil {
 		return err
@@ -432,7 +431,7 @@ func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) er
 
 	}
 
-	if inputs.TenantId != -1 {
+	if inputs.TenantId != "" {
 
 		query = query.Where("tbl_users.tenant_id=?", inputs.TenantId)
 	}
@@ -456,7 +455,7 @@ func (team TeamModel) GetUserDetails(DB *gorm.DB, inputs Team, user *TblUser) er
 }
 
 // check username
-func (t TeamModel) CheckUsername(user *TblUser, username string, userid int, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) CheckUsername(user *TblUser, username string, userid int, DB *gorm.DB, tenantid string) error {
 
 	if userid == 0 {
 
@@ -478,7 +477,7 @@ func (t TeamModel) CheckUsername(user *TblUser, username string, userid int, DB 
 }
 
 // change selected user access
-func (t TeamModel) ChangeAccess(user *TblUser, userIds []int, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) ChangeAccess(user *TblUser, userIds []int, DB *gorm.DB, tenantid string) error {
 
 	result := DB.Debug().Model(&user).Where("id IN (?) and tenant_id=?", userIds, tenantid).UpdateColumns(map[string]interface{}{"modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "data_access": user.DataAccess})
 	if result.Error != nil {
@@ -490,9 +489,9 @@ func (t TeamModel) ChangeAccess(user *TblUser, userIds []int, DB *gorm.DB, tenan
 
 // change active Status for multiple users
 
-func (t TeamModel) SelectedUserStatusChange(userStatus *TblUser, userIds []int, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) SelectedUserStatusChange(userStatus *TblUser, userIds []int, DB *gorm.DB, tenantid string) error {
 
-	if tenantid == 0 {
+	if tenantid == "" {
 		if err := DB.Debug().Table("tbl_users").Where("id in (?) ", userIds).UpdateColumns(map[string]interface{}{"is_active": userStatus.IsActive, "modified_by": userStatus.ModifiedBy, "modified_on": userStatus.ModifiedOn}).Error; err != nil {
 
 			return err
@@ -510,9 +509,9 @@ func (t TeamModel) SelectedUserStatusChange(userStatus *TblUser, userIds []int, 
 
 // Delete Multiple User Functionality
 
-func (t TeamModel) DeleteMultipleUser(user *TblUser, usersIds []int, userid int, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) DeleteMultipleUser(user *TblUser, usersIds []int, userid int, DB *gorm.DB, tenantid string) error {
 
-	if tenantid == 0 {
+	if tenantid == "" {
 		if userid != 0 {
 			if err := DB.Model(&TblUser{}).Where("id=? ", userid).Updates(TblUser{IsDeleted: user.IsDeleted, DeletedOn: user.DeletedOn, DeletedBy: user.DeletedBy}).Error; err != nil {
 
@@ -549,9 +548,9 @@ func (t TeamModel) DeleteMultipleUser(user *TblUser, usersIds []int, userid int,
 }
 
 // change active status
-func (t TeamModel) ChangeActiveUser(user *TblUser, userId int, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) ChangeActiveUser(user *TblUser, userId int, DB *gorm.DB, tenantid string) error {
 
-	if tenantid == 0 {
+	if tenantid == "" {
 		result := DB.Debug().Model(&user).Where("id = ? ", userId).UpdateColumns(map[string]interface{}{"modified_on": user.ModifiedOn, "modified_by": user.ModifiedBy, "is_active": user.IsActive})
 		if result.Error != nil {
 			return result.Error
@@ -566,7 +565,7 @@ func (t TeamModel) ChangeActiveUser(user *TblUser, userId int, DB *gorm.DB, tena
 	return nil
 }
 
-func (t TeamModel) NewuserCount(DB *gorm.DB, tenantid int) (count int64, err error) {
+func (t TeamModel) NewuserCount(DB *gorm.DB, tenantid string) (count int64, err error) {
 
 	if err := DB.Table("tbl_users").Where("is_deleted = 0 AND created_on >=? and tenant_id=?", time.Now().AddDate(0, 0, -10), tenantid).Count(&count).Error; err != nil {
 		return 0, err
@@ -575,7 +574,7 @@ func (t TeamModel) NewuserCount(DB *gorm.DB, tenantid int) (count int64, err err
 
 }
 
-func (t TeamModel) UserCount(DB *gorm.DB, tenantid int) (count int64, err error) {
+func (t TeamModel) UserCount(DB *gorm.DB, tenantid string) (count int64, err error) {
 
 	if err := DB.Table("tbl_users").Where("is_deleted = 0 and tenant_id=?", tenantid).Count(&count).Error; err != nil {
 		return 0, err
@@ -584,7 +583,7 @@ func (t TeamModel) UserCount(DB *gorm.DB, tenantid int) (count int64, err error)
 
 }
 
-func (t TeamModel) ChangePasswordById(user *TblUser, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) ChangePasswordById(user *TblUser, DB *gorm.DB, tenantid string) error {
 
 	if err := DB.Table("tbl_users").Where("id=? and tenant_id=?", user.Id, tenantid).Updates(TblUser{Password: user.Password, ModifiedOn: user.ModifiedOn, ModifiedBy: user.ModifiedBy}).Error; err != nil {
 
@@ -593,7 +592,7 @@ func (t TeamModel) ChangePasswordById(user *TblUser, DB *gorm.DB, tenantid int) 
 	return nil
 }
 
-func (t TeamModel) GetAdminRoleUsers(roleid []int, DB *gorm.DB, tenantid int) (userlist []TblUser, err error) {
+func (t TeamModel) GetAdminRoleUsers(roleid []int, DB *gorm.DB, tenantid string) (userlist []TblUser, err error) {
 	fmt.Println(roleid, "roleid")
 
 	if err := DB.Debug().Table("tbl_users").Where("role_id in (?) and is_active=1 and is_deleted=0 and tenant_id=?", roleid, tenantid).Find(&userlist).Error; err != nil {
@@ -604,7 +603,7 @@ func (t TeamModel) GetAdminRoleUsers(roleid []int, DB *gorm.DB, tenantid int) (u
 
 }
 
-func (t TeamModel) UpdateMyuser(user *TblUser, DB *gorm.DB, tenantid int) error {
+func (t TeamModel) UpdateMyuser(user *TblUser, DB *gorm.DB, tenantid string) error {
 
 	query := DB.Debug().Table("tbl_users").Where("id=? and tenant_id=?", user.Id, tenantid)
 

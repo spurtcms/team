@@ -3,7 +3,6 @@ package team
 import (
 	"errors"
 	"os"
-	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -13,7 +12,7 @@ var (
 	ErrorAuth       = errors.New("auth enabled not initialised")
 	ErrorPermission = errors.New("permissions enabled not initialised")
 	ErrorValidation = errors.New("given some values is empty")
-	TenantId, _     = strconv.Atoi(os.Getenv("Tenant_ID"))
+	TenantId        = os.Getenv("Tenant_ID")
 )
 
 // HashingPassword pass the arguments password it will return the bcrypt hashed password

@@ -4,10 +4,15 @@ go 1.19
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/spurtcms/auth v0.0.12
+	github.com/spurtcms/auth v0.0.37
 	golang.org/x/crypto v0.21.0
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.9
+)
+
+require (
+	github.com/aws/aws-sdk-go v1.55.5 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 )
 
 require (

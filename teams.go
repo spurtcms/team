@@ -26,7 +26,7 @@ func TeamSetup(config Config) *Teams {
 }
 
 // get the all list users
-func (team *Teams) ListUser(limit, offset int, filter Filters, Tenantid int) (tbluserr []TblUser, totoaluser int64, err error) {
+func (team *Teams) ListUser(limit, offset int, filter Filters, Tenantid string) (tbluserr []TblUser, totoaluser int64, err error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
@@ -127,7 +127,7 @@ func (team *Teams) CreateTenantid(user TblMstrTenant) (int, error) {
 	return id, nil
 }
 
-func (team *Teams) UpdateTenantId(UserId int, Tenantid int) {
+func (team *Teams) UpdateTenantId(UserId int, Tenantid string) {
 	tm.UpdateTenantId(UserId, Tenantid, team.DB)
 }
 
@@ -140,7 +140,7 @@ func (team *Teams) UpdateS3FolderName(tenantId, userId int, s3FolderPath string)
 	return nil
 }
 
-func (team *Teams) GetTenantDetails(tenantId int) (tenantDetails TblUser, err error) {
+func (team *Teams) GetTenantDetails(tenantId string) (tenantDetails TblUser, err error) {
 
 	tenantDetails, err = tm.GetTenantDetails(tenantId, team.DB)
 	if err != nil {
@@ -161,7 +161,7 @@ func (team *Teams) UpdateImageDetails(userId int, imageName, imagepath string) (
 }
 
 // update user.
-func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int, tenantid int) (createuser TblUser, terr error) {
+func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int, tenantid string) (createuser TblUser, terr error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
@@ -208,7 +208,7 @@ func (team *Teams) UpdateUser(teamcreate TeamCreate, userid int, tenantid int) (
 }
 
 // delete user.
-func (team *Teams) DeleteUser(usersIds []int, userid int, deletedby int, tenantid int) error {
+func (team *Teams) DeleteUser(usersIds []int, userid int, deletedby int, tenantid string) error {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
@@ -232,7 +232,7 @@ func (team *Teams) DeleteUser(usersIds []int, userid int, deletedby int, tenanti
 }
 
 // check email is already exists in your database
-func (team *Teams) CheckEmail(Email string, userid int, tenantid int) (users TblUser, checl bool, errr error) {
+func (team *Teams) CheckEmail(Email string, userid int, tenantid string) (users TblUser, checl bool, errr error) {
 
 	var user TblUser
 
@@ -247,7 +247,7 @@ func (team *Teams) CheckEmail(Email string, userid int, tenantid int) (users Tbl
 }
 
 // check mobile
-func (team *Teams) CheckNumber(mobile string, userid int, tenantid int) (bool, error) {
+func (team *Teams) CheckNumber(mobile string, userid int, tenantid string) (bool, error) {
 
 	var user TblUser
 
@@ -262,7 +262,7 @@ func (team *Teams) CheckNumber(mobile string, userid int, tenantid int) (bool, e
 }
 
 // Check username,email,number exsits or not validation
-func (team *Teams) CheckUserValidation(mobile string, email string, username string, userid int, tenantid int) (emaill bool, users bool, mobiles bool, err error) {
+func (team *Teams) CheckUserValidation(mobile string, email string, username string, userid int, tenantid string) (emaill bool, users bool, mobiles bool, err error) {
 
 	var user TblUser
 
@@ -279,7 +279,7 @@ func (team *Teams) CheckUserValidation(mobile string, email string, username str
 /*check new password with old password*/
 /*if it's return false it does not match to the old password*/
 /*or return true it does match to the old password*/
-func (team *Teams) CheckPasswordwithOld(userid int, password string, tenantid int) (bool, error) {
+func (team *Teams) CheckPasswordwithOld(userid int, password string, tenantid string) (bool, error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
@@ -307,7 +307,7 @@ func (team *Teams) CheckPasswordwithOld(userid int, password string, tenantid in
 }
 
 /*Logout Last Active*/
-func (team *Teams) LastLoginActivity(userid int, tenantid int) (err error) {
+func (team *Teams) LastLoginActivity(userid int, tenantid string) (err error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
@@ -325,7 +325,7 @@ func (team *Teams) LastLoginActivity(userid int, tenantid int) (err error) {
 }
 
 // Check role already used or not
-func (team *Teams) CheckRoleUsed(roleid int, tenantid int) (bool, error) {
+func (team *Teams) CheckRoleUsed(roleid int, tenantid string) (bool, error) {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
 
@@ -387,7 +387,7 @@ func (team *Teams) UserDetails(inputs Team) (UserDetails TblUser, err error) {
 }
 
 // check username
-func (team *Teams) CheckUsername(username string, userid int, tenantid int) (bool, error) {
+func (team *Teams) CheckUsername(username string, userid int, tenantid string) (bool, error) {
 
 	var user TblUser
 
@@ -402,7 +402,7 @@ func (team *Teams) CheckUsername(username string, userid int, tenantid int) (boo
 }
 
 // change user Access for multiple user
-func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int, tenantid int) error {
+func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int, tenantid string) error {
 
 	var user TblUser
 
@@ -421,7 +421,7 @@ func (team *Teams) ChangeAccess(userIds []int, modifiedby int, status int, tenan
 }
 
 // change active status
-func (team *Teams) ChangeActiveStatus(userId int, activeStatus int, modifiedby int, tenantid int) (bool, error) {
+func (team *Teams) ChangeActiveStatus(userId int, activeStatus int, modifiedby int, tenantid string) (bool, error) {
 
 	var userStatus TblUser
 
@@ -441,7 +441,7 @@ func (team *Teams) ChangeActiveStatus(userId int, activeStatus int, modifiedby i
 }
 
 // change active Status for multiple users
-func (team *Teams) SelectedUserStatusChange(userIds []int, activeStatus int, modifiedby int, tenantid int) error {
+func (team *Teams) SelectedUserStatusChange(userIds []int, activeStatus int, modifiedby int, tenantid string) error {
 
 	var userActiveStatus TblUser
 
@@ -461,7 +461,7 @@ func (team *Teams) SelectedUserStatusChange(userIds []int, activeStatus int, mod
 }
 
 // Dashboard usercount function
-func (team *Teams) DashboardUserCount(tenantid int) (totalcount int, lasttendayscount int, err error) {
+func (team *Teams) DashboardUserCount(tenantid string) (totalcount int, lasttendayscount int, err error) {
 
 	if autherr := AuthandPermission(team); autherr != nil {
 		return 0, 0, autherr
@@ -480,7 +480,7 @@ func (team *Teams) DashboardUserCount(tenantid int) (totalcount int, lasttendays
 	return int(allusercount), int(lusercount), nil
 }
 
-func (team *Teams) ChangeYourPassword(password string, userid int, tenantid int) (success bool, err error) {
+func (team *Teams) ChangeYourPassword(password string, userid int, tenantid string) (success bool, err error) {
 
 	if autherr := AuthandPermission(team); autherr != nil {
 		return false, autherr
@@ -502,7 +502,7 @@ func (team *Teams) ChangeYourPassword(password string, userid int, tenantid int)
 }
 
 // function to get the admin roles users list
-func (team *Teams) GetAdminRoleUsers(roleid []int, tenantid int) (userlist []TblUser, err error) {
+func (team *Teams) GetAdminRoleUsers(roleid []int, tenantid string) (userlist []TblUser, err error) {
 
 	if autherr := AuthandPermission(team); autherr != nil {
 		return []TblUser{}, autherr
@@ -513,7 +513,7 @@ func (team *Teams) GetAdminRoleUsers(roleid []int, tenantid int) (userlist []Tbl
 
 }
 
-func (team *Teams) UpdateMyUser(userupdate TeamCreate, userid int, tenantid int) error {
+func (team *Teams) UpdateMyUser(userupdate TeamCreate, userid int, tenantid string) error {
 
 	if autherr := AuthandPermission(team); autherr != nil {
 		return autherr
