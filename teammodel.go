@@ -46,6 +46,9 @@ type TblUser struct {
 	NameLength           int       `gorm:"-:migration;<-:false"`
 	LimitedLengthName    string    `gorm:"-:migration;<-:false"`
 	S3FolderName         string    `gorm:"column:s3_folder_name"`
+	Subdomain            string
+ 
+ 
 }
 
 type TblMstrTenant struct {
