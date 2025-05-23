@@ -596,3 +596,21 @@ func (team *Teams) DeleteTenantusers(usersIds []int, userid int, deletedby int) 
 
 	return nil
 }
+
+// update goTemplate by id
+func (team *Teams) UpdateGoTemplate(templateid int, userid int, tenantid string) error {
+
+	if AuthError := AuthandPermission(team); AuthError != nil {
+
+		return AuthError
+	}
+
+	err := tm.UpdateGoTemplateById(templateid, userid, tenantid, team.DB)
+
+	if err != nil {
+
+		return err
+	}
+
+	return nil
+}

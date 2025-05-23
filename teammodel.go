@@ -46,9 +46,7 @@ type TblUser struct {
 	NameLength           int       `gorm:"-:migration;<-:false"`
 	LimitedLengthName    string    `gorm:"-:migration;<-:false"`
 	S3FolderName         string    `gorm:"column:s3_folder_name"`
-	Subdomain            string
- 
- 
+	GoTemplateDefault    int       `gorm:"column:go_template_default"`
 }
 
 type TblMstrTenant struct {
@@ -671,6 +669,18 @@ func (t TeamModel) DeleteTenantusers(user *TblUser, usersIds []int, userid int, 
 			return err
 
 		}
+	}
+
+	return nil
+}
+
+// update goTemplate by id
+func (t TeamModel) UpdateGoTemplateById(templateid int, userid int, tenantid string, DB *gorm.DB) error {
+
+	if err := DB.Model(&TblUser{}).Where("id=? and tenant_id=?", userid, tenantid).Updates(TblUser{GoTemplateDefault: templateid}).Error; err != nil {
+
+		return err
+
 	}
 
 	return nil
