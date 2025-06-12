@@ -614,3 +614,22 @@ func (team *Teams) UpdateGoTemplate(templateid int, userid int, tenantid string)
 
 	return nil
 }
+
+
+
+func (team *Teams) CheckDomainName(subdomain string, userid int, tenantid string) error {
+
+	if AuthError := AuthandPermission(team); AuthError != nil {
+
+		return AuthError
+	}
+	err := tm.CheckDomainName(subdomain, userid, tenantid, team.DB)
+
+	if err != nil {
+
+		return err
+
+	}
+
+	return nil
+}

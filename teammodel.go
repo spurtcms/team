@@ -47,7 +47,7 @@ type TblUser struct {
 	LimitedLengthName    string    `gorm:"-:migration;<-:false"`
 	S3FolderName         string    `gorm:"column:s3_folder_name"`
 	Subdomain            string
-	GoTemplateDefault    int       `gorm:"column:go_template_default"`
+	GoTemplateDefault    int `gorm:"column:go_template_default"`
 }
 
 type TblMstrTenant struct {
@@ -682,6 +682,18 @@ func (t TeamModel) UpdateGoTemplateById(templateid int, userid int, tenantid str
 
 		return err
 
+	}
+
+	return nil
+}
+
+func (t TeamModel) CheckDomainName(subdomain string, userid int, tenantid string, DB *gorm.DB) error {
+
+	var userdet TblUser
+
+	if err := DB.Table("tbl_users").Where("subdomain = ? AND id != ? AND is_deleted = 0 ", subdomain, userid).First(&userdet).Error; err != nil {
+
+		return err
 	}
 
 	return nil
