@@ -48,6 +48,9 @@ type TblUser struct {
 	S3FolderName         string    `gorm:"column:s3_folder_name"`
 	Subdomain            string
 	GoTemplateDefault    int `gorm:"column:go_template_default"`
+	UsageMode            string
+	ChannelId            int
+	Country              string `gorm:"column:country"`
 }
 
 type TblMstrTenant struct {
@@ -692,6 +695,16 @@ func (t TeamModel) CheckDomainName(subdomain string, userid int, tenantid string
 	var userdet TblUser
 
 	if err := DB.Table("tbl_users").Where("subdomain = ? AND id != ? AND is_deleted = 0 ", subdomain, userid).First(&userdet).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+func (t TeamModel) UpdateUserDetails(userdata map[string]interface{}, userid int, tenantid string, DB *gorm.DB) error {
+
+	if err := DB.Table("tbl_users").Where("id=? and is_deleted = 0 and tenant_id=?", userid, tenantid).UpdateColumns(userdata).Error; err != nil {
 
 		return err
 	}

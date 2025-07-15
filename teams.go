@@ -615,8 +615,6 @@ func (team *Teams) UpdateGoTemplate(templateid int, userid int, tenantid string)
 	return nil
 }
 
-
-
 func (team *Teams) CheckDomainName(subdomain string, userid int, tenantid string) error {
 
 	if AuthError := AuthandPermission(team); AuthError != nil {
@@ -631,5 +629,23 @@ func (team *Teams) CheckDomainName(subdomain string, userid int, tenantid string
 
 	}
 
+	return nil
+}
+
+func (team *Teams) UpdateUserDetails(userdata map[string]interface{}, userid int, tenantid string) error {
+
+	if AuthError := AuthandPermission(team); AuthError != nil {
+
+		return AuthError
+	}
+
+	currentTime, _ := time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	userdata["modified_on"] = currentTime
+	userdata["modified_by"] = userid
+
+	err := tm.UpdateUserDetails(userdata, userid, tenantid, team.DB)
+	if err != nil {
+		return err
+	}
 	return nil
 }
