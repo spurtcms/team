@@ -2,9 +2,9 @@
 
 ## Table of Contents
 
-- [1. Introduction](#1-introduction)
-- [2. Prerequisites](#2-prerequisites)
-- [3. Network Setup](#3-network-setup)
+1. [Introduction](#1-introduction)  
+2. [Prerequisites](#2-prerequisites)  
+3. [Network Setup](#3-network-setup)
 
 
 ## 1. Introduction
