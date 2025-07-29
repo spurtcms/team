@@ -2,7 +2,7 @@
 
 ## Table of Contents
 
-- [Introduction](#introduction)
+- [Introduction](#1.-introduction)
 - [Prerequisites](#prerequisites)
 - [Network Setup](#network-setup)
 
