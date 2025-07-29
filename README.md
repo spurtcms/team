@@ -1,6 +1,6 @@
 # FoodTraze
 
-## Table of Contents
+## Topics
 
 1. [Introduction](#1-introduction)  
 2. [Prerequisites](#2-prerequisites)  
